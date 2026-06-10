@@ -71,10 +71,10 @@ This repo includes a `render.yaml` for one-click setup on [Render](https://rende
 
 ## Importing maintenance data
 
-Use the "Import Excel" sidebar button to upload a `.csv` file with these columns:
+Use the "Import CSV" sidebar button to upload a `.csv` file with these columns:
 
 ```
-machine_name, machine_type, breakdown_date, start_time, end_time, failure_cause, technician, notes
+machine_name, machine_type, breakdown_date, start_time, end_time, failure_cause, category, technician, notes
 ```
 
 New machines are created automatically if they don't already exist.
