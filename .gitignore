@@ -1,3 +1,4 @@
 node_modules/
 .env
 *.log
+PG Local.session.sql

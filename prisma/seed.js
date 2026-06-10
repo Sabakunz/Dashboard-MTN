@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 const prisma = require('../src/db');
 
 const machines = [
@@ -64,3 +65,6 @@ main()
     process.exit(1);
   })
   .finally(() => prisma.$disconnect());
+=======
+
+>>>>>>> Stashed changes

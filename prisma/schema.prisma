@@ -11,7 +11,10 @@ model Machine {
   id             Int         @id @default(autoincrement())
   name           String      @unique
   type           String
+<<<<<<< Updated upstream
   location       String      @default("")
+=======
+>>>>>>> Stashed changes
   status         String      @default("idle") // running | down | idle | maintenance
   performancePct Float       @default(95)
   qualityPct     Float       @default(98)
@@ -25,9 +28,13 @@ model Breakdown {
   machineId   Int
   machine     Machine  @relation(fields: [machineId], references: [id], onDelete: Cascade)
   cause       String
+<<<<<<< Updated upstream
   category    String   @default("Mechanical") // Mechanical | Electrical | Hydraulic | Operator | Preventive
   severity    String   @default("warning") // critical | warning | info
   status      String   @default("open") // open | resolved
+=======
+  severity    String   @default("warning") // critical | warning | resolved
+>>>>>>> Stashed changes
   date        DateTime
   startTime   String?
   endTime     String?

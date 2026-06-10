@@ -34,7 +34,10 @@ module.exports = function (io) {
           id: m.id,
           name: m.name,
           type: m.type,
+<<<<<<< Updated upstream
           location: m.location,
+=======
+>>>>>>> Stashed changes
           status: m.status,
           availability,
           breakdowns: m.breakdowns.length,
@@ -101,15 +104,23 @@ module.exports = function (io) {
         where: { date: { gte: start, lte: end } },
         include: { machine: true },
         orderBy: { date: 'desc' },
+<<<<<<< Updated upstream
         take: 50,
+=======
+        take: 10,
+>>>>>>> Stashed changes
       });
 
       res.json(breakdowns.map((b) => ({
         machine: b.machine.name,
         cause: b.cause,
+<<<<<<< Updated upstream
         category: b.category,
         severity: b.severity,
         status: b.status,
+=======
+        severity: b.severity,
+>>>>>>> Stashed changes
         start: b.startTime ?? '',
         duration: `${b.durationHrs.toFixed(1)} hrs`,
         date: b.date.toISOString().slice(0, 10),
@@ -177,6 +188,7 @@ module.exports = function (io) {
     } catch (err) { next(err); }
   });
 
+<<<<<<< Updated upstream
   // ── POST /api/breakdown ──────────────────────────────
   // Repair Machine Order (RMO) form submission
   router.post('/breakdown', async (req, res, next) => {
@@ -194,10 +206,23 @@ module.exports = function (io) {
       if (!machine) return res.status(404).json({ error: `Machine "${machine_code}" not found` });
 
       const durationHrs = computeDurationHrs(start_time, end_time);
+=======
+  // ── POST /api/breakdowns ──────────────────────────────
+  router.post('/breakdowns', async (req, res, next) => {
+    try {
+      const {
+        machine_name, cause, severity, date,
+        start_time, end_time, duration_hrs, technician, notes,
+      } = req.body;
+
+      const machine = await prisma.machine.findUnique({ where: { name: machine_name } });
+      if (!machine) return res.status(404).json({ error: `Machine "${machine_name}" not found` });
+>>>>>>> Stashed changes
 
       const breakdown = await prisma.breakdown.create({
         data: {
           machineId: machine.id,
+<<<<<<< Updated upstream
           cause: failure_cause,
           category: failure_category || 'Mechanical',
           severity: severity || 'warning',
@@ -208,6 +233,16 @@ module.exports = function (io) {
           durationHrs,
           technician: technician || null,
           notes: notes || null,
+=======
+          cause,
+          severity: severity ?? 'warning',
+          date: date ? new Date(date) : new Date(),
+          startTime: start_time ?? null,
+          endTime: end_time ?? null,
+          durationHrs: Number(duration_hrs) || 0,
+          technician: technician ?? null,
+          notes: notes ?? null,
+>>>>>>> Stashed changes
         },
       });
 
@@ -216,8 +251,13 @@ module.exports = function (io) {
     } catch (err) { next(err); }
   });
 
+<<<<<<< Updated upstream
   // ── PATCH /api/machines/:name/status ───────────────────
   router.patch('/machines/:name/status', async (req, res, next) => {
+=======
+  // ── PATCH /api/machines/:id/status ───────────────────
+  router.patch('/machines/:id/status', async (req, res, next) => {
+>>>>>>> Stashed changes
     try {
       const { status } = req.body;
       const allowed = ['running', 'down', 'idle', 'maintenance'];
@@ -225,11 +265,16 @@ module.exports = function (io) {
         return res.status(400).json({ error: `status must be one of: ${allowed.join(', ')}` });
       }
 
+<<<<<<< Updated upstream
       const existing = await prisma.machine.findUnique({ where: { name: req.params.name } });
       if (!existing) return res.status(404).json({ error: `Machine "${req.params.name}" not found` });
 
       const machine = await prisma.machine.update({
         where: { name: req.params.name },
+=======
+      const machine = await prisma.machine.update({
+        where: { id: Number(req.params.id) },
+>>>>>>> Stashed changes
         data: { status },
       });
 
@@ -240,7 +285,11 @@ module.exports = function (io) {
 
   // ── POST /api/import ──────────────────────────────────
   // Accepts .csv with columns:
+<<<<<<< Updated upstream
   // machine_name, machine_type, breakdown_date, start_time, end_time, failure_cause, category, technician, notes
+=======
+  // machine_name, machine_type, breakdown_date, start_time, end_time, failure_cause, technician, notes
+>>>>>>> Stashed changes
   router.post('/import', upload.single('file'), async (req, res, next) => {
     try {
       if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
@@ -267,9 +316,13 @@ module.exports = function (io) {
           data: {
             machineId: machine.id,
             cause,
+<<<<<<< Updated upstream
             category: row.category ? String(row.category) : 'Mechanical',
             severity: 'warning',
             status: end ? 'resolved' : 'open',
+=======
+            severity: 'warning',
+>>>>>>> Stashed changes
             date: parseDateValue(row.breakdown_date) ?? new Date(),
             startTime: start,
             endTime: end,

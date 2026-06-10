@@ -1,4 +1,5 @@
 # Dashboard-MTN
+<<<<<<< Updated upstream
 
 Real-time CNC machine maintenance monitoring dashboard — Express + Socket.io API,
 PostgreSQL (via Prisma), and a static HTML/JS frontend served from the same app.
@@ -86,3 +87,8 @@ New machines are created automatically if they don't already exist.
 - Track production counts per machine to compute real Performance/Quality
   (currently defaulted per machine in the `Machine` table).
 - Add authentication if this will hold real factory data.
+=======
+# Tempat Testing untuk monitoring
+# By SabakunZ
+# 2026
+>>>>>>> Stashed changes
