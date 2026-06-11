@@ -780,13 +780,12 @@ textarea.form-input{resize:vertical;min-height:64px}
 <!-- TOAST -->
 <div class="toast-container" id="toastContainer"></div>
 
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
 /* ══════════════════════════════════════
    STATE & DEMO DATA
 ══════════════════════════════════════ */
 const API = '/api';
-const S = { machines:[], breakdowns:[], pareto:[], downtime:[], kpi:{}, sortKey:'name', sortDir:1, sf:'all', sv:'all', notifications:[], socket:null };
+const S = { machines:[], breakdowns:[], pareto:[], downtime:[], kpi:{}, sortKey:'name', sortDir:1, sf:'all', sv:'all', notifications:[], connected:false };
 
 const DEMO = {
   kpi:{breakdowns:14,downtime_hrs:37.5,availability:83.2,performance:91.4,quality:96.8,oee:73.5,mtbf:18.4,mttr:2.7},
@@ -847,18 +846,8 @@ function toggleDrawer() {
 }
 
 /* ══════════════════════════════════════
-   WEBSOCKET
+   CONNECTION STATUS
 ══════════════════════════════════════ */
-function initSocket() {
-  try {
-    S.socket=io({timeout:3000});
-    S.socket.on('connect',()=>setConn(true));
-    S.socket.on('disconnect',()=>setConn(false));
-    S.socket.on('connect_error',()=>setConn(false));
-    S.socket.on('breakdown:new',d=>{addNotif(`⚡ ${d.machine}: ${d.cause}`,'red');showToast(`⚡ ${d.machine}: ${d.cause}`,'red');loadAll();});
-    S.socket.on('machine:status',d=>{addNotif(`📡 ${d.name} → ${d.status}`,'yellow');loadAll();});
-  } catch{setConn(false);}
-}
 function setConn(on){
   S.connected=on;
   const dot=document.getElementById('connDot'),lbl=document.getElementById('connLabel');
@@ -869,8 +858,8 @@ function setConn(on){
    FETCH WITH FALLBACK
 ══════════════════════════════════════ */
 async function apiFetch(path,demo){
-  try{const r=await fetch(API+path,{signal:AbortSignal.timeout(3000)});if(!r.ok)throw 0;return await r.json();}
-  catch{return demo;}
+  try{const r=await fetch(API+path,{signal:AbortSignal.timeout(3000)});if(!r.ok)throw 0;setConn(true);return await r.json();}
+  catch{setConn(false);return demo;}
 }
 
 /* ══════════════════════════════════════
@@ -1307,7 +1296,7 @@ window.addEventListener('resize',()=>{if(S.downtime.length)renderTrend(S.downtim
 /* ══════════════════════════════════════
    INIT
 ══════════════════════════════════════ */
-initSocket();loadAll();
+loadAll();
 setInterval(loadAll,30000);setInterval(simUpdate,9000);
 setTimeout(()=>{
   addNotif('⚡ CNC-02: Tool holder broken — machine down','red');
