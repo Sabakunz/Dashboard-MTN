@@ -7,6 +7,17 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
+// ── GET /api/health ──────────────────────────────────
+// Quick diagnostic: confirms the function can reach Postgres.
+router.get('/health', async (req, res) => {
+  try {
+    const [{ count }] = await prisma.$queryRaw`SELECT count(*)::int AS count FROM "Machine"`;
+    res.json({ ok: true, machines: count });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 // ── GET /api/machines ──────────────────────────────
 router.get('/machines', async (req, res, next) => {
   try {

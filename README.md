@@ -91,6 +91,34 @@ DATABASE_URL="<your Neon connection string>" npx prisma migrate deploy
 DATABASE_URL="<your Neon connection string>" npm run seed
 ```
 
+### Troubleshooting: data doesn't update after deploy (e.g. "Save Breakdown" does nothing)
+
+1. **Check `/api/health`** — open `https://<your-site>.netlify.app/api/health`.
+   - `{"ok":true,"machines":N}` → the function can reach Postgres.
+   - `{"ok":false,"error":"..."}` → read the error (usually a connection or
+     missing-table issue) and check the Netlify function logs
+     (Site → Logs → Functions) for the full stack trace.
+   - A 404 here means the `/api/*` redirect isn't reaching the function —
+     double-check `netlify.toml` is in the repo root and the site was
+     redeployed after it was added.
+
+2. **`DATABASE_URL` not set in Netlify** — Site configuration → Environment
+   variables. Must be set for the **Functions** scope (not just builds).
+   After adding/changing it, trigger a new deploy (env vars only apply to
+   new deploys).
+
+3. **Use Neon's pooled connection string** — Netlify Functions are
+   serverless; each invocation can open a new DB connection and a
+   non-pooled Neon connection will run out of connections quickly. Use the
+   connection string with `-pooler` in the hostname and append
+   `&pgbouncer=true&connection_limit=1` (see `.env.example`).
+
+4. **Schema not migrated on the deployed DB** — run step above
+   (`prisma migrate deploy` against the Neon `DATABASE_URL`) any time
+   `prisma/schema.prisma` changes. The Netlify build also runs this
+   automatically via `npm run build`, but only if `DATABASE_URL` is
+   available at build time too.
+
 ## Importing maintenance data
 
 Use the "Import CSV" sidebar button to upload a `.csv` file with these columns:
