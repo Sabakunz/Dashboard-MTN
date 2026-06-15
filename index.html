@@ -486,6 +486,7 @@ textarea.form-input{resize:vertical;min-height:64px}
   <div class="sb-item" onclick="openModal('importModal')"><span class="sb-icon">📥</span>Import CSV</div>
   <div class="sb-item" onclick="exportCSV()"><span class="sb-icon">📤</span>Export Report</div>
   <div class="sb-item" onclick="openModal('addBreakdownModal')"><span class="sb-icon">➕</span>Repair Machine Order</div>
+  <div class="sb-item" onclick="openModal('addMachineModal')"><span class="sb-icon">🏭</span>Tambah Mesin</div>
 </aside>
 
 <!-- ══ MAIN CONTENT ══ -->
@@ -703,6 +704,7 @@ textarea.form-input{resize:vertical;min-height:64px}
     <div class="sb-item" onclick="openModal('importModal');toggleDrawer()"><span class="sb-icon">📥</span>Import CSV</div>
     <div class="sb-item" onclick="exportCSV();toggleDrawer()"><span class="sb-icon">📤</span>Export CSV</div>
     <div class="sb-item" onclick="openModal('addBreakdownModal');toggleDrawer()"><span class="sb-icon">➕</span>RMO</div>
+    <div class="sb-item" onclick="openModal('addMachineModal');toggleDrawer()"><span class="sb-icon">🏭</span>Tambah Mesin</div>
     <div class="sb-section">Mesin</div>
     <div id="drawer-machine-list"></div>
   </div>
@@ -746,6 +748,40 @@ textarea.form-input{resize:vertical;min-height:64px}
       <div class="form-group full"><label class="form-label">Keterangan</label><textarea class="form-input" id="bd-notes" placeholder="Additional details…"></textarea></div>
     </div>
     <div class="modal-footer"><button class="btn" onclick="closeModal('addBreakdownModal')">Cancel</button><button class="btn primary" id="bd-btn" onclick="submitBD()">Save Breakdown</button></div>
+  </div>
+</div>
+
+<!-- ══ CLOSE WORK ORDER MODAL ══ -->
+<div class="overlay" id="closeWOModal" onclick="if(event.target===this)closeModal('closeWOModal')">
+  <div class="modal">
+    <div class="modal-drag" onclick="closeModal('closeWOModal')"></div>
+    <div class="modal-header">
+      <div class="modal-title">Tutup Work Order</div>
+      <button class="modal-close" onclick="closeModal('closeWOModal')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group full" id="cwo-info" style="color:var(--muted);font-size:13px"></div>
+      <div class="form-group"><label class="form-label">Waktu Selesai *</label><input type="time" class="form-input" id="cwo-end"/></div>
+      <div class="form-group full"><label class="form-label">Catatan Perbaikan</label><textarea class="form-input" id="cwo-notes" placeholder="Tindakan yang dilakukan…"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('closeWOModal')">Cancel</button><button class="btn primary" id="cwo-btn" onclick="submitCloseWO()">Tutup WO</button></div>
+  </div>
+</div>
+
+<!-- ══ ADD MACHINE MODAL ══ -->
+<div class="overlay" id="addMachineModal" onclick="if(event.target===this)closeModal('addMachineModal')">
+  <div class="modal">
+    <div class="modal-drag" onclick="closeModal('addMachineModal')"></div>
+    <div class="modal-header">
+      <div class="modal-title">Tambah Mesin</div>
+      <button class="modal-close" onclick="closeModal('addMachineModal')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Nama Mesin *</label><input type="text" class="form-input" id="am-name" placeholder="contoh. CNC-07"/><div class="form-error" id="err-am-name"></div></div>
+      <div class="form-group"><label class="form-label">Tipe *</label><select class="form-input" id="am-type"><option>Turning</option><option>Milling</option><option>Grinding</option><option>EDM</option><option>Other</option></select></div>
+      <div class="form-group full"><label class="form-label">Lokasi</label><input type="text" class="form-input" id="am-location" placeholder="contoh. Bay A"/></div>
+    </div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('addMachineModal')">Cancel</button><button class="btn primary" id="am-btn" onclick="submitMachine()">Save Mesin</button></div>
   </div>
 </div>
 
@@ -1043,7 +1079,7 @@ function renderTimeline(bds,containerId,limit=999){
         <div class="tl-title">${b.machine} — ${b.cause}</div>
         <div class="tl-meta">${b.date} · ${b.start}${b.status==='open'?' <span style="color:var(--red)">● OPEN</span>':''}</div>
       </div>
-      <div class="tl-duration">${b.duration}</div>
+      ${b.status==='open'&&b.id?`<button class="btn" style="padding:5px 10px;font-size:11px" onclick="openCloseModal(${b.id},'${b.machine}','${b.cause.replace(/'/g,"\\'")}')">Tutup WO</button>`:`<div class="tl-duration">${b.duration}</div>`}
     </div>`).join('');
 }
 
@@ -1147,6 +1183,52 @@ async function submitBD(){
   ['bd-machine','bd-cause','bd-tech','bd-notes','bd-start','bd-end'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   btn.disabled=false;btn.textContent='Save Breakdown';
   setTimeout(loadAll,600);
+}
+
+/* ══════════════════════════════════════
+   CLOSE WORK ORDER
+══════════════════════════════════════ */
+let closingWO=null;
+function openCloseModal(id,machine,cause){
+  closingWO=id;
+  document.getElementById('cwo-info').textContent=`${machine} — ${cause}`;
+  const now=new Date();
+  document.getElementById('cwo-end').value=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('cwo-notes').value='';
+  openModal('closeWOModal');
+}
+async function submitCloseWO(){
+  if(!closingWO)return;
+  const btn=document.getElementById('cwo-btn');btn.disabled=true;btn.textContent='Saving…';
+  const payload={end_time:document.getElementById('cwo-end').value,notes:document.getElementById('cwo-notes').value};
+  try{await fetch(`${API}/breakdown/${closingWO}/close`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}catch{}
+  showToast('✅ Work order ditutup','green');
+  closeModal('closeWOModal');
+  btn.disabled=false;btn.textContent='Tutup WO';
+  closingWO=null;
+  loadAll();
+}
+
+/* ══════════════════════════════════════
+   ADD MACHINE
+══════════════════════════════════════ */
+async function submitMachine(){
+  const name=document.getElementById('am-name').value.trim();
+  const type=document.getElementById('am-type').value;
+  const location=document.getElementById('am-location').value.trim();
+  document.getElementById('err-am-name').textContent=name?'':'Required';
+  document.getElementById('am-name').className='form-input'+(name?'':' error');
+  if(!name)return;
+  const btn=document.getElementById('am-btn');btn.disabled=true;btn.textContent='Saving…';
+  try{
+    const r=await fetch(`${API}/machines`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,type,location})});
+    if(!r.ok){const e=await r.json();throw new Error(e.error||'Failed');}
+    showToast(`✅ Mesin ${name} ditambahkan`,'green');
+    closeModal('addMachineModal');
+    ['am-name','am-location'].forEach(id=>document.getElementById(id).value='');
+    loadAll();
+  }catch(e){showToast(`❌ ${e.message}`,'red');}
+  btn.disabled=false;btn.textContent='Save Mesin';
 }
 
 /* ══════════════════════════════════════

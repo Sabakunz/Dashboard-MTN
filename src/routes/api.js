@@ -115,6 +115,7 @@ router.get('/breakdowns', async (req, res, next) => {
     });
 
     res.json(breakdowns.map((b) => ({
+      id: b.id,
       machine: b.machine.name,
       cause: b.cause,
       category: b.category,
@@ -222,6 +223,55 @@ router.post('/breakdown', async (req, res, next) => {
     });
 
     res.status(201).json(breakdown);
+  } catch (err) { next(err); }
+});
+
+// ── PATCH /api/breakdown/:id/close ────────────────────
+// Close a work order: maintenance member marks repair as done.
+router.patch('/breakdown/:id/close', async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const { end_time, notes } = req.body;
+
+    const existing = await prisma.breakdown.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ error: `Work order #${id} not found` });
+
+    const endTime = end_time || nowTimeString();
+    const durationHrs = existing.startTime
+      ? computeDurationHrs(existing.startTime, endTime)
+      : existing.durationHrs;
+
+    const breakdown = await prisma.breakdown.update({
+      where: { id },
+      data: {
+        status: 'resolved',
+        endTime,
+        durationHrs,
+        notes: notes ? `${existing.notes ? existing.notes + ' | ' : ''}${notes}` : existing.notes,
+      },
+    });
+
+    res.json(breakdown);
+  } catch (err) { next(err); }
+});
+
+// ── POST /api/machines ─────────────────────────────────
+// Register a new machine so it can receive work orders.
+router.post('/machines', async (req, res, next) => {
+  try {
+    const { name, type, location } = req.body;
+    if (!name || !type) {
+      return res.status(400).json({ error: 'name and type are required' });
+    }
+
+    const existing = await prisma.machine.findUnique({ where: { name } });
+    if (existing) return res.status(409).json({ error: `Machine "${name}" already exists` });
+
+    const machine = await prisma.machine.create({
+      data: { name, type, location: location || '' },
+    });
+
+    res.status(201).json(machine);
   } catch (err) { next(err); }
 });
 
@@ -351,6 +401,11 @@ function parseTimeValue(value) {
     return value.toISOString().slice(11, 16);
   }
   return String(value);
+}
+
+function nowTimeString() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 function computeDurationHrs(start, end) {
