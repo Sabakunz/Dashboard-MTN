@@ -160,14 +160,70 @@ router.get('/pareto', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── GET /api/pareto-machines ─────────────────────────
+// Top 10 machines by breakdown frequency within the period.
+router.get('/pareto-machines', async (req, res, next) => {
+  try {
+    const { start, end } = getPeriodRange(req.query.period);
+    const breakdowns = await prisma.breakdown.findMany({
+      where: { date: { gte: start, lte: end } },
+      include: { machine: true },
+    });
+
+    const counts = {};
+    for (const b of breakdowns) {
+      counts[b.machine.name] = (counts[b.machine.name] ?? 0) + 1;
+    }
+
+    const total = breakdowns.length;
+    const pareto = Object.entries(counts)
+      .map(([machine, count]) => ({
+        machine,
+        count,
+        pct: total > 0 ? Math.round((count / total) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    res.json(pareto);
+  } catch (err) { next(err); }
+});
+
 // ── GET /api/downtime-by-day ─────────────────────────
 // range=today  -> hourly buckets for the current day
 // range=week   -> last 7 days, one bucket per day (default)
-// range=month  -> last 30 days, one bucket per day
+// range=month  -> last 12 calendar months, one bucket per month
 router.get('/downtime-by-day', async (req, res, next) => {
   try {
     const range = req.query.range || 'week';
     const now = new Date();
+
+    if (range === 'month') {
+      const months = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({
+          key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+          day: d.toLocaleDateString('en-US', { month: 'short' }),
+          hrs: 0,
+        });
+      }
+
+      const start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+      const breakdowns = await prisma.breakdown.findMany({
+        where: { date: { gte: start, lte: end } },
+      });
+
+      for (const b of breakdowns) {
+        const key = `${b.date.getUTCFullYear()}-${String(b.date.getUTCMonth() + 1).padStart(2, '0')}`;
+        const entry = months.find((m) => m.key === key);
+        if (entry) entry.hrs += b.durationHrs;
+      }
+
+      return res.json(months.map(({ day, hrs }) => ({ day, hrs })));
+    }
 
     if (range === 'today') {
       const start = new Date(now);
@@ -193,7 +249,7 @@ router.get('/downtime-by-day', async (req, res, next) => {
       return res.json(hours.map(({ day, hrs }) => ({ day, hrs })));
     }
 
-    const totalDays = range === 'month' ? 29 : 6;
+    const totalDays = 6;
     const end = new Date(now);
     const start = new Date(end);
     start.setDate(start.getDate() - totalDays);
@@ -209,9 +265,7 @@ router.get('/downtime-by-day', async (req, res, next) => {
       d.setDate(d.getDate() - i);
       days.push({
         key: d.toISOString().slice(0, 10),
-        day: range === 'month'
-          ? d.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit' })
-          : d.toLocaleDateString('en-US', { weekday: 'short' }),
+        day: d.toLocaleDateString('en-US', { weekday: 'short' }),
         hrs: 0,
       });
     }

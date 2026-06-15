@@ -103,7 +103,7 @@ body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--fo
    GRID LAYOUTS
 ═══════════════════════════════════════ */
 .row2{display:grid;grid-template-columns:1.6fr 1fr;gap:12px}
-.row4{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+.row4{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px}
 
 /* ═══════════════════════════════════════
    CARDS
@@ -614,6 +614,10 @@ textarea.form-input{resize:vertical;min-height:64px}
         <div class="card-header"><div><div class="card-title">Top Penyebab Kerusakan</div><div class="card-sub">Pareto</div></div></div>
         <div id="pareto-list"><div style="color:var(--muted);font-size:12px">Loading…</div></div>
       </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Frekuensi Breakdown per Mesin</div><div class="card-sub">Top 10 · Pareto</div></div></div>
+        <div id="pareto-machine-list"><div style="color:var(--muted);font-size:12px">Loading…</div></div>
+      </div>
     </div>
   </div><!-- /dashboard -->
 
@@ -663,7 +667,12 @@ textarea.form-input{resize:vertical;min-height:64px}
           <span class="filter-chip" data-sv="resolved" onclick="setSV(this)">Teratasi</span>
         </div>
       </div>
-      <div class="timeline" id="full-timeline" style="max-height:none"></div>
+      <div style="overflow-x:auto">
+        <table class="machine-table" style="min-width:900px">
+          <thead><tr><th>Mesin</th><th>Status</th><th>Tanggal</th><th>Jenis Problem</th><th>Problem Identifikasi</th><th>PIC GH</th><th>Tanggal Selesai</th><th>Penyelesaian / Action</th><th>PIC MTN</th><th>Durasi</th><th>Aksi</th></tr></thead>
+          <tbody id="full-log-tbody"><tr><td colspan="11" style="text-align:center;padding:20px;color:var(--muted)">Loading…</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -818,7 +827,7 @@ textarea.form-input{resize:vertical;min-height:64px}
    STATE & DEMO DATA
 ══════════════════════════════════════ */
 const API = '/api';
-const S = { machines:[], breakdowns:[], pareto:[], downtime:[], kpi:{}, sortKey:'name', sortDir:1, sf:'all', sv:'all', notifications:[], connected:false, trendRange:'week' };
+const S = { machines:[], breakdowns:[], pareto:[], paretoMachines:[], downtime:[], kpi:{}, sortKey:'name', sortDir:1, sf:'all', sv:'all', notifications:[], connected:false, trendRange:'week' };
 
 const DEMO = {
   kpi:{breakdowns:14,downtime_hrs:37.5,availability:83.2,performance:91.4,quality:96.8,oee:73.5,mtbf:18.4,mttr:2.7},
@@ -849,6 +858,13 @@ const DEMO = {
   downtime:[
     {day:'Mon',hrs:8.2},{day:'Tue',hrs:4.5},{day:'Wed',hrs:12.1},
     {day:'Thu',hrs:3.8},{day:'Fri',hrs:6.4},{day:'Sat',hrs:2.5},{day:'Sun',hrs:0.0},
+  ],
+  paretoMachines:[
+    {machine:'CNC-02',count:5,pct:36},
+    {machine:'CNC-01',count:3,pct:21},
+    {machine:'CNC-04',count:2,pct:14},
+    {machine:'CNC-05',count:2,pct:14},
+    {machine:'CNC-03',count:1,pct:7},
   ]
 };
 
@@ -901,18 +917,19 @@ async function apiFetch(path,demo){
 async function loadAll(){
   const period=document.getElementById('periodSelect').value;
   const lu=document.getElementById('lastUpdate'); lu.textContent='Updating…';
-  const [kpi,machines,breakdowns,pareto,downtime]=await Promise.all([
+  const [kpi,machines,breakdowns,pareto,paretoMachines,downtime]=await Promise.all([
     apiFetch(`/kpi?period=${period}`,DEMO.kpi),
     apiFetch(`/machines?period=${period}`,DEMO.machines),
     apiFetch(`/breakdowns?period=${period}`,DEMO.breakdowns),
     apiFetch(`/pareto?period=${period}`,DEMO.pareto),
+    apiFetch(`/pareto-machines?period=${period}`,DEMO.paretoMachines),
     apiFetch(`/downtime-by-day?range=${S.trendRange||'week'}`,DEMO.downtime),
   ]);
-  S.kpi=kpi;S.machines=machines;S.breakdowns=breakdowns;S.pareto=pareto;S.downtime=downtime;
+  S.kpi=kpi;S.machines=machines;S.breakdowns=breakdowns;S.pareto=pareto;S.paretoMachines=paretoMachines;S.downtime=downtime;
   renderKPIs(kpi);renderOEE(kpi);
   renderMachineTable(machines);
   renderTimeline(breakdowns,'breakdown-timeline',5);
-  renderPareto(pareto);renderTrend(downtime);populateMachineDD(machines);
+  renderPareto(pareto);renderParetoMachines(paretoMachines);renderTrend(downtime);populateMachineDD(machines);
   lu.textContent='Updated '+new Date().toLocaleTimeString();
 }
 async function setTrendRange(range,el){
@@ -1095,7 +1112,29 @@ function applyLogFilter(){
     const ss=S.sv==='all'||(S.sv==='resolved'?b.status==='resolved':b.severity===S.sv);
     return ms&&ss;
   });
-  renderTimeline(data,'full-timeline');
+  renderLogTable(data);
+}
+function renderLogTable(data){
+  const tbody=document.getElementById('full-log-tbody');if(!tbody)return;
+  if(!data.length){tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--muted)">Tidak Ada Kasus</td></tr>';return;}
+  tbody.innerHTML=data.map(b=>{
+    const open=b.status==='open';
+    const statusBadge=open?`<span style="color:var(--red);font-weight:600">● OPEN</span>`:`<span style="color:var(--green);font-weight:600">✔ CLOSE</span>`;
+    const penyelesaian=[b.resolution,b.action].filter(Boolean).join(' · ')||'—';
+    return `<tr>
+      <td>${b.machine}</td>
+      <td>${statusBadge}</td>
+      <td>${b.date} · ${b.start||'—'}</td>
+      <td>${b.category||'—'}</td>
+      <td>${b.cause}</td>
+      <td>${b.pic_gh||'—'}</td>
+      <td>${b.end_date||'—'}</td>
+      <td>${penyelesaian}</td>
+      <td>${b.pic_mtn||'—'}</td>
+      <td>${b.duration}</td>
+      <td>${open&&b.id?`<button class="btn" style="padding:4px 8px;font-size:11px" onclick="openCloseModal(${b.id},'${b.machine}','${b.cause.replace(/'/g,"\\'")}')">Tutup WO</button>`:'—'}</td>
+    </tr>`;
+  }).join('');
 }
 function filterLog(){applyLogFilter();}
 function setSV(el){document.querySelectorAll('[data-sv]').forEach(e=>e.classList.remove('active'));el.classList.add('active');S.sv=el.dataset.sv;applyLogFilter();}
@@ -1105,6 +1144,7 @@ function setSV(el){document.querySelectorAll('[data-sv]').forEach(e=>e.classList
 ══════════════════════════════════════ */
 function renderPareto(pareto){
   const el=document.getElementById('pareto-list');
+  if(!pareto.length){el.innerHTML='<div style="color:var(--muted);font-size:12px">Tidak ada data</div>';return;}
   const max=Math.max(...pareto.map(p=>p.pct));
   el.innerHTML=pareto.map((p,i)=>`
     <div class="pareto-row" onclick="showToast('${p.cause}: ${p.count}x (${p.pct}%)','green')">
@@ -1115,9 +1155,22 @@ function renderPareto(pareto){
       <div class="pareto-count">${p.count}x</div>
     </div>`).join('');
 }
+function renderParetoMachines(pareto){
+  const el=document.getElementById('pareto-machine-list');
+  if(!pareto.length){el.innerHTML='<div style="color:var(--muted);font-size:12px">Tidak ada data</div>';return;}
+  const max=Math.max(...pareto.map(p=>p.pct));
+  el.innerHTML=pareto.map((p,i)=>`
+    <div class="pareto-row" onclick="showToast('${p.machine}: ${p.count}x (${p.pct}%)','green')">
+      <div class="pareto-rank">${i+1}</div>
+      <div class="pareto-name">${p.machine}</div>
+      <div class="pareto-bar-wrap"><div class="pareto-bar-fill" style="width:${(p.pct/max)*100}%"></div></div>
+      <div class="pareto-pct">${p.pct}%</div>
+      <div class="pareto-count">${p.count}x</div>
+    </div>`).join('');
+}
 
 /* ══════════════════════════════════════
-   TREND LINE CHART
+   TREND BAR CHART
 ══════════════════════════════════════ */
 function renderTrend(days){
   if(!days?.length)return;
@@ -1127,25 +1180,27 @@ function renderTrend(days){
   const ctx=canvas.getContext('2d');
   const pad={t:8,b:4,l:4,r:4},iW=W-pad.l-pad.r,iH=110-pad.t-pad.b;
   const vals=days.map(d=>d.hrs),maxV=Math.max(...vals,1);
-  const xOf=i=>pad.l+(i/(days.length-1))*iW,yOf=v=>pad.t+(1-(v/maxV))*iH;
+  const n=days.length;
+  const slot=iW/n,barW=Math.max(2,slot*0.55);
+  const xOf=i=>pad.l+i*slot+(slot-barW)/2,yOf=v=>pad.t+(1-(v/maxV))*iH;
   ctx.clearRect(0,0,W,110);
   for(let i=0;i<4;i++){const y=pad.t+iH*(i/3);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;ctx.stroke();}
-  const g=ctx.createLinearGradient(0,pad.t,0,110);g.addColorStop(0,'rgba(68,136,255,.3)');g.addColorStop(1,'rgba(68,136,255,0)');
-  ctx.beginPath();ctx.moveTo(xOf(0),110);
-  for(let i=0;i<vals.length;i++){if(i===0)ctx.lineTo(xOf(0),yOf(vals[0]));else{const cx=(xOf(i)+xOf(i-1))/2;ctx.bezierCurveTo(cx,yOf(vals[i-1]),cx,yOf(vals[i]),xOf(i),yOf(vals[i]));}}
-  ctx.lineTo(xOf(vals.length-1),110);ctx.closePath();ctx.fillStyle=g;ctx.fill();
-  ctx.beginPath();ctx.lineWidth=2;ctx.strokeStyle='#4488ff';ctx.lineCap='round';
-  for(let i=0;i<vals.length;i++){if(i===0)ctx.moveTo(xOf(0),yOf(vals[0]));else{const cx=(xOf(i)+xOf(i-1))/2;ctx.bezierCurveTo(cx,yOf(vals[i-1]),cx,yOf(vals[i]),xOf(i),yOf(vals[i]));}}
-  ctx.stroke();
-  vals.forEach((v,i)=>{ctx.beginPath();ctx.arc(xOf(i),yOf(v),3.5,0,Math.PI*2);ctx.fillStyle='#4488ff';ctx.fill();ctx.strokeStyle='var(--bg)';ctx.lineWidth=1.5;ctx.stroke();});
+  const g=ctx.createLinearGradient(0,pad.t,0,110);g.addColorStop(0,'#4488ff');g.addColorStop(1,'rgba(68,136,255,.35)');
+  vals.forEach((v,i)=>{
+    const x=xOf(i),y=yOf(v),h=(pad.t+iH)-y;
+    ctx.fillStyle=g;
+    const r=Math.min(4,barW/2);
+    ctx.beginPath();
+    if(h>0){ctx.moveTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.arcTo(x+barW,y,x+barW,y+r,r);ctx.lineTo(x+barW,pad.t+iH);ctx.lineTo(x,pad.t+iH);ctx.closePath();ctx.fill();}
+  });
   document.getElementById('trendXAxis').innerHTML=days.map(d=>`<span>${d.day}</span>`).join('');
   // Touch + mouse tooltip
   const tip=document.getElementById('trendTip');
   const showTip=(clientX,rect)=>{
     const mx=(clientX-rect.left)*(W/rect.width);
-    let cl=0,mn=999;vals.forEach((_,i)=>{const d=Math.abs(mx-xOf(i));if(d<mn){mn=d;cl=i;}});
-    if(mn<36){tip.style.display='block';tip.style.left=Math.min(xOf(cl),W-80)+'px';tip.style.top=(yOf(vals[cl])-30)+'px';tip.textContent=`${days[cl].day}: ${vals[cl].toFixed(1)} jam`;}
-    else tip.style.display='none';
+    let cl=Math.floor((mx-pad.l)/slot);
+    if(cl<0||cl>=n){tip.style.display='none';return;}
+    tip.style.display='block';tip.style.left=Math.min(xOf(cl),W-80)+'px';tip.style.top=(yOf(vals[cl])-30)+'px';tip.textContent=`${days[cl].day}: ${vals[cl].toFixed(1)} jam`;
   };
   canvas.onmousemove=e=>showTip(e.clientX,canvas.getBoundingClientRect());
   canvas.onmouseleave=()=>tip.style.display='none';
