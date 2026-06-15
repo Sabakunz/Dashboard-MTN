@@ -122,8 +122,13 @@ router.get('/breakdowns', async (req, res, next) => {
       severity: b.severity,
       status: b.status,
       start: b.startTime ?? '',
+      end_date: b.endDate ? b.endDate.toISOString().slice(0, 10) : '',
       duration: `${b.durationHrs.toFixed(1)} hrs`,
       date: b.date.toISOString().slice(0, 10),
+      pic_gh: b.picGh ?? '',
+      pic_mtn: b.picMtn ?? '',
+      resolution: b.resolution ?? '',
+      action: b.action ?? '',
     })));
   } catch (err) { next(err); }
 });
@@ -226,8 +231,8 @@ router.get('/downtime-by-day', async (req, res, next) => {
 router.post('/breakdown', async (req, res, next) => {
   try {
     const {
-      machine_code, breakdown_date, start_time, end_time,
-      failure_cause, failure_category, severity, technician, notes,
+      machine_code, breakdown_date, start_time,
+      failure_cause, failure_category, pic_gh,
     } = req.body;
 
     if (!machine_code || !failure_cause) {
@@ -237,21 +242,15 @@ router.post('/breakdown', async (req, res, next) => {
     const machine = await prisma.machine.findUnique({ where: { name: machine_code } });
     if (!machine) return res.status(404).json({ error: `Machine "${machine_code}" not found` });
 
-    const durationHrs = computeDurationHrs(start_time, end_time);
-
     const breakdown = await prisma.breakdown.create({
       data: {
         machineId: machine.id,
         cause: failure_cause,
         category: failure_category || 'Mechanical',
-        severity: severity || 'warning',
-        status: end_time ? 'resolved' : 'open',
+        status: 'open',
         date: breakdown_date ? new Date(breakdown_date) : new Date(),
         startTime: start_time || null,
-        endTime: end_time || null,
-        durationHrs,
-        technician: technician || null,
-        notes: notes || null,
+        picGh: pic_gh || null,
       },
     });
 
@@ -264,23 +263,25 @@ router.post('/breakdown', async (req, res, next) => {
 router.patch('/breakdown/:id/close', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    const { end_time, notes } = req.body;
+    const { end_date, resolution, action, pic_mtn } = req.body;
 
     const existing = await prisma.breakdown.findUnique({ where: { id } });
     if (!existing) return res.status(404).json({ error: `Work order #${id} not found` });
 
-    const endTime = end_time || nowTimeString();
-    const durationHrs = existing.startTime
-      ? computeDurationHrs(existing.startTime, endTime)
-      : existing.durationHrs;
+    const endTime = nowTimeString();
+    const endDate = end_date ? new Date(end_date) : new Date();
+    const durationHrs = computeDurationBetween(existing.date, existing.startTime, endDate, endTime);
 
     const breakdown = await prisma.breakdown.update({
       where: { id },
       data: {
         status: 'resolved',
+        endDate,
         endTime,
         durationHrs,
-        notes: notes ? `${existing.notes ? existing.notes + ' | ' : ''}${notes}` : existing.notes,
+        resolution: resolution || null,
+        action: action || null,
+        picMtn: pic_mtn || null,
       },
     });
 
@@ -439,6 +440,19 @@ function parseTimeValue(value) {
 function nowTimeString() {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function computeDurationBetween(startDate, startTime, endDate, endTime) {
+  const [sh, sm] = (startTime || '00:00').split(':').map(Number);
+  const start = new Date(startDate);
+  start.setHours(Number.isNaN(sh) ? 0 : sh, Number.isNaN(sm) ? 0 : sm, 0, 0);
+
+  const [eh, em] = (endTime || '00:00').split(':').map(Number);
+  const end = new Date(endDate || startDate);
+  end.setHours(Number.isNaN(eh) ? 0 : eh, Number.isNaN(em) ? 0 : em, 0, 0);
+
+  const diffMs = end - start;
+  return diffMs > 0 ? Number((diffMs / 3600000).toFixed(2)) : 0;
 }
 
 function computeDurationHrs(start, end) {

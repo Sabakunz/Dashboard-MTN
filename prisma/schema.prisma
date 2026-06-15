@@ -25,14 +25,19 @@ model Breakdown {
   id          Int      @id @default(autoincrement())
   machineId   Int
   machine     Machine  @relation(fields: [machineId], references: [id], onDelete: Cascade)
-  cause       String
-  category    String   @default("Mechanical") // Mechanical | Electrical | Hydraulic | Operator | Preventive
+  cause       String   // Problem Identifikasi
+  category    String   @default("Mechanical") // Jenis Problem: Mechanical | Electrical | Hydraulic | Operator | Preventive
   severity    String   @default("warning") // critical | warning | info
   status      String   @default("open") // open | resolved
-  date        DateTime
-  startTime   String?
+  date        DateTime // Tanggal
+  startTime   String?  // Waktu Mulai
+  endDate     DateTime? // Tanggal Selesai
   endTime     String?
   durationHrs Float    @default(0)
+  picGh       String?  // PIC GH (pelapor)
+  picMtn      String?  // PIC MTN (yang menutup work order)
+  resolution  String?  // Penyelesaian Problem
+  action      String?  // Action
   technician  String?
   notes       String?
   createdAt   DateTime @default(now())

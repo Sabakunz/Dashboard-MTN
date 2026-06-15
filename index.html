@@ -461,15 +461,15 @@ textarea.form-input{resize:vertical;min-height:64px}
   <div class="logo" onclick="navigate('dashboard')">Maintenance<span> Dashboard</span></div>
   <nav class="nav-links">
     <span class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">Dashboard</span>
-    <span class="nav-item" data-page="machines" onclick="navigate('machines')">Machines</span>
+    <span class="nav-item" data-page="machines" onclick="navigate('machines')">Mesin</span>
     <span class="nav-item" data-page="maintenance" onclick="navigate('maintenance')">Maintenance</span>
-    <span class="nav-item" data-page="reports" onclick="navigate('reports')">Reports</span>
+    <span class="nav-item" data-page="reports" onclick="navigate('reports')">Laporan</span>
   </nav>
   <div class="topbar-right">
-    <span><span class="conn-dot connecting" id="connDot"></span><span class="conn-label" id="connLabel">Connecting…</span></span>
+    <span><span class="conn-dot connecting" id="connDot"></span><span class="conn-label" id="connLabel">Menghubungkan…</span></span>
     <span class="date-label" id="clockLabel"></span>
     <div class="notif-btn" onclick="toggleNotifications()">🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span></div>
-    <div class="avatar" onclick="showToast('👤 Logged in as Operator','green')">OP</div>
+    <div class="avatar" onclick="showToast('👤 Login Sebagai AdminMTC','green')">OP</div>
   </div>
 </header>
 
@@ -477,10 +477,10 @@ textarea.form-input{resize:vertical;min-height:64px}
 <aside class="sidebar" id="desktopSidebar">
   <div class="sb-section">Gambaran Umum</div>
   <div class="sb-item active" data-page="dashboard" onclick="navigate('dashboard')"><span class="sb-icon">📊</span>Dashboard</div>
-  <div class="sb-item" data-page="machines" onclick="navigate('machines')"><span class="sb-icon">📋</span>All Machines</div>
+  <div class="sb-item" data-page="machines" onclick="navigate('machines')"><span class="sb-icon">📋</span>Semua Mesin</div>
   <div class="sb-item" onclick="navigate('maintenance')"><span class="sb-icon">⚠️</span>Breakdowns<span class="sb-badge" id="sb-breakdown-count">—</span></div>
   <div class="sb-item" data-page="maintenance" onclick="navigate('maintenance')"><span class="sb-icon">🔧</span>Maintenance</div>
-  <div class="sb-item" data-page="reports" onclick="navigate('reports')"><span class="sb-icon">📈</span>Reports</div>
+  <div class="sb-item" data-page="reports" onclick="navigate('reports')"><span class="sb-icon">📈</span>Laporan</div>
   <div class="sb-section">Data</div>
   <div class="sb-item" onclick="openModal('importModal')"><span class="sb-icon">📥</span>Import CSV</div>
   <div class="sb-item" onclick="exportCSV()"><span class="sb-icon">📤</span>Export Report</div>
@@ -500,9 +500,9 @@ textarea.form-input{resize:vertical;min-height:64px}
       </div>
       <div class="header-actions">
         <select class="btn" id="periodSelect" onchange="loadAll()" style="padding:7px 10px">
-          <option value="today">Hari Ini</option>
-          <option value="week" selected>Minggu Ini</option>
-          <option value="month">Bulan Ini</option>
+          <option value="today">Harian</option>
+          <option value="week" selected>Mingguan</option>
+          <option value="month">Bulanan</option>
         </select>
         <button class="btn-icon" onclick="loadAll()" title="Refresh">↻</button>
         <button class="btn primary" onclick="openModal('addBreakdownModal')">+ RMO</button>
@@ -560,18 +560,18 @@ textarea.form-input{resize:vertical;min-height:64px}
             <div class="oee-row"><div class="oee-row-label"><span>Performance</span><span style="color:var(--purple)" id="oee-pf">—%</span></div><div class="oee-bar"><div class="oee-fill" id="oee-pf-bar" style="background:var(--purple);width:0%"></div></div></div>
             <div class="oee-row"><div class="oee-row-label"><span>Quality</span><span style="color:var(--green)" id="oee-ql">—%</span></div><div class="oee-bar"><div class="oee-fill" id="oee-ql-bar" style="background:var(--green);width:0%"></div></div></div>
             <div class="oee-stats">
-              <div><div class="oee-stat-val" id="mtbf-val">—</div><div class="oee-stat-lbl">MTBF</div><div class="oee-stat-desc">hrs between failures</div></div>
-              <div><div class="oee-stat-val" id="mttr-val">—</div><div class="oee-stat-lbl">MTTR</div><div class="oee-stat-desc">hrs to repair</div></div>
+              <div><div class="oee-stat-val" id="mtbf-val">—</div><div class="oee-stat-lbl">MTBF</div><div class="oee-stat-desc">jam antara problem</div></div>
+              <div><div class="oee-stat-val" id="mttr-val">—</div><div class="oee-stat-lbl">MTTR</div><div class="oee-stat-desc">jam untuk perbaikan</div></div>
             </div>
           </div>
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><div><div class="card-title">Downtime Trend</div><div class="card-sub">Tekan untuk detail</div></div>
+        <div class="card-header"><div><div class="card-title">Downtime Trend</div><div class="card-sub">Arahan untuk detail</div></div>
           <div class="trend-tabs" style="display:flex;gap:4px">
-            <button class="card-action trend-tab" data-range="today" onclick="setTrendRange('today',this)">Now</button>
-            <button class="card-action trend-tab active" data-range="week" onclick="setTrendRange('week',this)">Weekly</button>
-            <button class="card-action trend-tab" data-range="month" onclick="setTrendRange('month',this)">Monthly</button>
+            <button class="card-action trend-tab" data-range="today" onclick="setTrendRange('today',this)">Harian</button>
+            <button class="card-action trend-tab active" data-range="week" onclick="setTrendRange('week',this)">Mingguan</button>
+            <button class="card-action trend-tab" data-range="month" onclick="setTrendRange('month',this)">Bulanan</button>
           </div>
         </div>
         <div class="trend-wrap"><canvas id="trendCanvas"></canvas><div class="trend-tooltip" id="trendTip"></div></div>
@@ -584,7 +584,7 @@ textarea.form-input{resize:vertical;min-height:64px}
       <div class="card-header" style="flex-wrap:wrap;gap:8px">
         <div><div class="card-title">Status Mesin</div><div class="card-sub" id="machine-count">—</div></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <div class="search-wrap" style="min-width:130px"><span class="search-icon">🔍</span><input class="search-input" id="machineSearch" placeholder="Search…" oninput="filterTable()"/></div>
+          <div class="search-wrap" style="min-width:130px"><span class="search-icon">🔍</span><input class="search-input" id="machineSearch" placeholder="Cari Mesin…" oninput="filterTable()"/></div>
           <button class="card-action" onclick="navigate('machines')">Semua ›</button>
         </div>
       </div>
@@ -629,13 +629,13 @@ textarea.form-input{resize:vertical;min-height:64px}
         <div class="filter-row">
           <span class="filter-chip active" data-sf="all" onclick="setSF(this)">Semua</span>
           <span class="filter-chip" data-sf="running" onclick="setSF(this)">Running</span>
-          <span class="filter-chip" data-sf="down" onclick="setSF(this)">Down</span>
+          <span class="filter-chip" data-sf="down" onclick="setSF(this)">Stop</span>
           <span class="filter-chip" data-sf="idle" onclick="setSF(this)">Idle</span>
         </div>
       </div>
       <div style="overflow-x:auto">
         <table class="machine-table" style="min-width:400px">
-          <thead><tr><th>Machine</th><th>Type</th><th>Status</th><th>Avail %</th><th>BDs</th><th>DT hrs</th><th>Action</th></tr></thead>
+          <thead><tr><th>Mesin</th><th>Tipe</th><th>Status</th><th>Avail %</th><th>Freq</th><th>Waktu DT</th><th>Action</th></tr></thead>
           <tbody id="machine-full-tbody"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">Loading…</td></tr></tbody>
         </table>
       </div>
@@ -645,19 +645,17 @@ textarea.form-input{resize:vertical;min-height:64px}
   <!-- ─── MAINTENANCE PAGE ─── -->
   <div class="page-view" id="page-maintenance">
     <div class="page-header">
-      <div><div class="page-title">Catatan Aktivitas Maintenance</div></div>
+      <div><div class="page-title">Log Work Order Maintenance</div></div>
       <button class="btn primary" onclick="openModal('addBreakdownModal')">+ RMO</button>
     </div>
     <div class="maint-grid">
       <div class="maint-card"><div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">OPEN</div><div style="font-family:var(--display);font-size:26px;font-weight:700;color:var(--red)" id="m-open">—</div></div>
-      <div class="maint-card"><div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Rata-rata 
-        
-        Repair</div><div style="font-family:var(--display);font-size:26px;font-weight:700;color:var(--yellow)" id="m-mttr">—</div><div style="font-size:9.5px;color:var(--muted)">Jam</div></div>
-      <div class="maint-card"><div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Teratasi</div><div style="font-family:var(--display);font-size:26px;font-weight:700;color:var(--green)" id="m-resolved">—</div></div>
+      <div class="maint-card"><div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Rata-rata Repair</div><div style="font-family:var(--display);font-size:26px;font-weight:700;color:var(--yellow)" id="m-mttr">—</div><div style="font-size:9.5px;color:var(--muted)">Jam</div></div>
+      <div class="maint-card"><div style="font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">CLOSE</div><div style="font-family:var(--display);font-size:26px;font-weight:700;color:var(--green)" id="m-resolved">—</div></div>
     </div>
     <div class="card">
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <div class="search-wrap" style="flex:1;min-width:140px"><span class="search-icon">🔍</span><input class="search-input" id="mSearchLog" placeholder="Search log…" oninput="filterLog()"/></div>
+        <div class="search-wrap" style="flex:1;min-width:140px"><span class="search-icon">🔍</span><input class="search-input" id="mSearchLog" placeholder="Cari log…" oninput="filterLog()"/></div>
         <div class="filter-row">
           <span class="filter-chip active" data-sv="all" onclick="setSV(this)">Semua</span>
           <span class="filter-chip" data-sv="critical" onclick="setSV(this)">Critical</span>
@@ -740,17 +738,11 @@ textarea.form-input{resize:vertical;min-height:64px}
       <div class="form-group"><label class="form-label">Mesin *</label><input type="text" class="form-input" id="bd-machine" list="bd-machine-list" placeholder="Ketik nama mesin…" autocomplete="off"/><datalist id="bd-machine-list"></datalist><div class="form-error" id="err-m"></div></div>
       <div class="form-group"><label class="form-label">Tanggal *</label><input type="date" class="form-input" id="bd-date"/></div>
       <div class="form-group"><label class="form-label">Waktu Mulai</label><input type="time" class="form-input" id="bd-start"/></div>
-      <div class="form-group"><label class="form-label">Waktu Selesai</label><input type="time" class="form-input" id="bd-end"/></div>
-      <div class="form-group full"><label class="form-label">Penyebab Kerusakan *</label><input type="text" class="form-input" id="bd-cause" placeholder="contoh. Spindle rusak"/><div class="form-error" id="err-c"></div></div>
-      <div class="form-group"><label class="form-label">Kategori Problem</label><select class="form-input" id="bd-cat"><option>Mechanical</option><option>Electrical</option><option>Hydraulic</option><option>Operator</option><option>Preventive</option></select></div>
-      <div class="form-group"><label class="form-label">Tingkat Keparahan</label><select class="form-input" id="bd-sev"><option value="critical">Critical</option><option value="warning" selected>Warning</option><option value="info">Info</option></select></div>
-      <div class="form-group"><label class="form-label">PIC MTN</label><input type="text" class="form-input" id="bd-tech" placeholder="Name"/></div>
-
-
-      
-      <div class="form-group full"><label class="form-label">Keterangan</label><textarea class="form-input" id="bd-notes" placeholder="Additional details…"></textarea></div>
+      <div class="form-group"><label class="form-label">Jenis Problem</label><select class="form-input" id="bd-cat"><option>Mechanical</option><option>Electrical</option><option>Hydraulic</option><option>Operator</option><option>Preventive</option></select></div>
+      <div class="form-group full"><label class="form-label">Problem Identifikasi *</label><input type="text" class="form-input" id="bd-cause" placeholder="contoh. Spindle rusak"/><div class="form-error" id="err-c"></div></div>
+      <div class="form-group"><label class="form-label">PIC GH</label><input type="text" class="form-input" id="bd-pic-gh" placeholder="Nama PIC GH"/></div>
     </div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('addBreakdownModal')">Cancel</button><button class="btn primary" id="bd-btn" onclick="submitBD()">Save Breakdown</button></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('addBreakdownModal')">Cancel</button><button class="btn primary" id="bd-btn" onclick="submitBD()">Simpan Work Order</button></div>
   </div>
 </div>
 
@@ -764,10 +756,12 @@ textarea.form-input{resize:vertical;min-height:64px}
     </div>
     <div class="form-grid">
       <div class="form-group full" id="cwo-info" style="color:var(--muted);font-size:13px"></div>
-      <div class="form-group"><label class="form-label">Waktu Selesai *</label><input type="time" class="form-input" id="cwo-end"/></div>
-      <div class="form-group full"><label class="form-label">Catatan Perbaikan</label><textarea class="form-input" id="cwo-notes" placeholder="Tindakan yang dilakukan…"></textarea></div>
+      <div class="form-group"><label class="form-label">Tanggal Selesai *</label><input type="date" class="form-input" id="cwo-end-date"/></div>
+      <div class="form-group"><label class="form-label">PIC MTN</label><input type="text" class="form-input" id="cwo-pic-mtn" placeholder="Nama PIC MTN"/></div>
+      <div class="form-group full"><label class="form-label">Penyelesaian Problem</label><textarea class="form-input" id="cwo-resolution" placeholder="Bagaimana problem diselesaikan…"></textarea></div>
+      <div class="form-group full"><label class="form-label">Action</label><textarea class="form-input" id="cwo-action" placeholder="Tindakan yang dilakukan…"></textarea></div>
     </div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('closeWOModal')">Cancel</button><button class="btn primary" id="cwo-btn" onclick="submitCloseWO()">Tutup WO</button></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('closeWOModal')">Simpan</button><button class="btn primary" id="cwo-btn" onclick="submitCloseWO()">Tutup WO</button></div>
   </div>
 </div>
 
@@ -781,10 +775,10 @@ textarea.form-input{resize:vertical;min-height:64px}
     </div>
     <div class="form-grid">
       <div class="form-group"><label class="form-label">Nama Mesin *</label><input type="text" class="form-input" id="am-name" placeholder="contoh. CNC-07"/><div class="form-error" id="err-am-name"></div></div>
-      <div class="form-group"><label class="form-label">Tipe *</label><select class="form-input" id="am-type"><option>Turning</option><option>Milling</option><option>Grinding</option><option>EDM</option><option>Other</option></select></div>
-      <div class="form-group full"><label class="form-label">Lokasi</label><input type="text" class="form-input" id="am-location" placeholder="contoh. Bay A"/></div>
+      <div class="form-group"><label class="form-label">Tipe *</label><select class="form-input" id="am-type"><option>Turning</option><option>Milling</option><option>Grinding</option><option>EDM</option><option>Lainnya</option></select></div>
+      <div class="form-group full"><label class="form-label">Cluster</label><input type="text" class="form-input" id="am-location" placeholder="contoh. Bay A"/></div>
     </div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('addMachineModal')">Cancel</button><button class="btn primary" id="am-btn" onclick="submitMachine()">Save Mesin</button></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('addMachineModal')">Batal</button><button class="btn primary" id="am-btn" onclick="submitMachine()">Simpan Mesin</button></div>
   </div>
 </div>
 
@@ -829,12 +823,12 @@ const S = { machines:[], breakdowns:[], pareto:[], downtime:[], kpi:{}, sortKey:
 const DEMO = {
   kpi:{breakdowns:14,downtime_hrs:37.5,availability:83.2,performance:91.4,quality:96.8,oee:73.5,mtbf:18.4,mttr:2.7},
   machines:[
-    {name:'CNC-01',type:'Turning',  location:'Bay A',status:'running',    availability:88.4,breakdowns:3,downtime_hrs:8.2, last_incident:'Spindle overheat'},
-    {name:'CNC-02',type:'Milling',  location:'Bay A',status:'down',       availability:61.2,breakdowns:5,downtime_hrs:14.6,last_incident:'Tool holder broken'},
-    {name:'CNC-03',type:'Turning',  location:'Bay B',status:'running',    availability:91.5,breakdowns:1,downtime_hrs:3.1, last_incident:'Coolant leak'},
-    {name:'CNC-04',type:'Grinding', location:'Bay B',status:'idle',       availability:79.8,breakdowns:2,downtime_hrs:7.4, last_incident:'Belt wear'},
-    {name:'CNC-05',type:'Milling',  location:'Bay C',status:'maintenance',availability:72.3,breakdowns:3,downtime_hrs:4.2, last_incident:'Scheduled PM'},
-    {name:'CNC-06',type:'EDM',      location:'Bay C',status:'running',    availability:95.1,breakdowns:0,downtime_hrs:0.0, last_incident:'—'},
+    {name:'CNC-01',type:'Turning',  location:'Cell AD',status:'running',    availability:88.4,breakdowns:3,downtime_hrs:8.2, last_incident:'Spindle overheat'},
+    {name:'CNC-02',type:'Milling',  location:'Cell BC',status:'down',       availability:61.2,breakdowns:5,downtime_hrs:14.6,last_incident:'Tool holder broken'},
+    {name:'CNC-03',type:'Turning',  location:'Cell BC',status:'running',    availability:91.5,breakdowns:1,downtime_hrs:3.1, last_incident:'Coolant leak'},
+    {name:'CNC-04',type:'Grinding', location:'Cell AD',status:'idle',       availability:79.8,breakdowns:2,downtime_hrs:7.4, last_incident:'Belt wear'},
+    {name:'CNC-05',type:'Milling',  location:'Cell EF',status:'maintenance',availability:72.3,breakdowns:3,downtime_hrs:4.2, last_incident:'Scheduled PM'},
+    {name:'Cutting Yilmaz',type:'Cutting',      location:'Cell EF',status:'running',    availability:95.1,breakdowns:0,downtime_hrs:0.0, last_incident:'—'},
   ],
   breakdowns:[
     {machine:'CNC-02',cause:'Tool holder broken', severity:'critical',start:'08:15',duration:'4.5 hrs',date:'Today',    status:'open'},
@@ -943,8 +937,8 @@ function renderKPIs(d){
   ct('kpi-av-trend',d.availability,90,`${d.availability?.toFixed(1)}% · target 90%`);
   ct('kpi-pf-trend',d.performance,95,`${d.performance?.toFixed(1)}% · target 95%`);
   ct('kpi-oee-trend',d.oee,85,`${d.oee?.toFixed(1)}% · world class 85%`);
-  st('kpi-dt-trend',`${d.downtime_hrs?.toFixed(1)} hrs`);
-  st('kpi-bd-trend',`${d.breakdowns} events`);
+  st('kpi-dt-trend',`${d.downtime_hrs?.toFixed(1)} jam`);
+  st('kpi-bd-trend',`${d.breakdowns} kasus`);
   st('sb-breakdown-count',d.breakdowns);st('sb-bd-mobile',d.breakdowns);
   // bottom nav alert dot
   const bn=document.querySelector('.bn-item[data-page="maintenance"]');
@@ -982,7 +976,7 @@ function drawGauge(f){
    MACHINE TABLE (dashboard)
 ══════════════════════════════════════ */
 function renderMachineTable(machines){
-  st('machine-count',`${machines.length} machines monitored`);
+  st('machine-count',`${machines.length} mesin termonitor`);
   applyTableSort(machines,'machine-tbody',7);
 }
 function applyTableSort(machines,tbodyId,cols){
@@ -1047,8 +1041,8 @@ function showDetail(name){
       <div class="detail-stat"><div class="detail-stat-val">${m.downtime_hrs?.toFixed(1)}h</div><div class="detail-stat-lbl">Downtime</div></div>
     </div>
     <div>
-      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;color:var(--muted)">Recent Events</div>
-      ${rBDs.length?rBDs.slice(0,4).map(b=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:7px 0;border-bottom:1px solid var(--border)"><span>${b.cause}</span><span style="color:var(--muted);font-family:var(--mono)">${b.duration}</span></div>`).join(''):'<div style="color:var(--muted);font-size:12px">No recent events</div>'}
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;color:var(--muted)">History Riwayat Mesin</div>
+      ${rBDs.length?rBDs.slice(0,4).map(b=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:7px 0;border-bottom:1px solid var(--border)"><span>${b.cause}</span><span style="color:var(--muted);font-family:var(--mono)">${b.duration}</span></div>`).join(''):'<div style="color:var(--muted);font-size:12px">Tidak Ada Kasus Terbaru</div>'}
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn primary" onclick="setStatus('${name}','running')" style="flex:1;padding:10px">▶ Running</button>
@@ -1072,13 +1066,14 @@ async function setStatus(name,status){
 function renderTimeline(bds,containerId,limit=999){
   const el=document.getElementById(containerId);if(!el)return;
   const data=bds.slice(0,limit);
-  if(!data.length){el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px">No events</div>';return;}
+  if(!data.length){el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px">Tidak Ada Kasus</div>';return;}
   el.innerHTML=data.map(b=>`
     <div class="tl-item">
       <div class="tl-dot ${b.status==='open'?'critical':b.severity}"></div>
       <div class="tl-content">
         <div class="tl-title">${b.machine} — ${b.cause}</div>
-        <div class="tl-meta">${b.date} · ${b.start}${b.status==='open'?' <span style="color:var(--red)">● OPEN</span>':''}</div>
+        <div class="tl-meta">${b.category?b.category+' · ':''}${b.date} · ${b.start}${b.status==='open'?' <span style="color:var(--red)">● OPEN</span>':''}${b.pic_gh?' · PIC GH: '+b.pic_gh:''}</div>
+        ${b.status==='resolved'&&(b.resolution||b.action||b.pic_mtn)?`<div class="tl-meta">${b.resolution?'Penyelesaian: '+b.resolution+' · ':''}${b.action?'Action: '+b.action+' · ':''}${b.pic_mtn?'PIC MTN: '+b.pic_mtn:''}</div>`:''}
       </div>
       ${b.status==='open'&&b.id?`<button class="btn" style="padding:5px 10px;font-size:11px" onclick="openCloseModal(${b.id},'${b.machine}','${b.cause.replace(/'/g,"\\'")}')">Tutup WO</button>`:`<div class="tl-duration">${b.duration}</div>`}
     </div>`).join('');
@@ -1090,7 +1085,7 @@ function renderTimeline(bds,containerId,limit=999){
 function renderMaintenancePage(){
   st('m-open',S.breakdowns.filter(b=>b.status==='open').length);
   st('m-resolved',S.breakdowns.filter(b=>b.status==='resolved').length);
-  st('m-mttr',S.kpi.mttr?(S.kpi.mttr+' h'):'—');
+  st('m-mttr',S.kpi.mttr?(S.kpi.mttr+''):'—');
   applyLogFilter();
 }
 function applyLogFilter(){
@@ -1149,7 +1144,7 @@ function renderTrend(days){
   const showTip=(clientX,rect)=>{
     const mx=(clientX-rect.left)*(W/rect.width);
     let cl=0,mn=999;vals.forEach((_,i)=>{const d=Math.abs(mx-xOf(i));if(d<mn){mn=d;cl=i;}});
-    if(mn<36){tip.style.display='block';tip.style.left=Math.min(xOf(cl),W-80)+'px';tip.style.top=(yOf(vals[cl])-30)+'px';tip.textContent=`${days[cl].day}: ${vals[cl].toFixed(1)} hrs`;}
+    if(mn<36){tip.style.display='block';tip.style.left=Math.min(xOf(cl),W-80)+'px';tip.style.top=(yOf(vals[cl])-30)+'px';tip.textContent=`${days[cl].day}: ${vals[cl].toFixed(1)} jam`;}
     else tip.style.display='none';
   };
   canvas.onmousemove=e=>showTip(e.clientX,canvas.getBoundingClientRect());
@@ -1175,14 +1170,14 @@ async function submitBD(){
   document.getElementById('bd-cause').className='form-input'+(c?'':' error');
   if(!m||!validMachine||!c)return;
   const btn=document.getElementById('bd-btn');btn.disabled=true;btn.textContent='Saving…';
-  const payload={machine_code:m,breakdown_date:document.getElementById('bd-date').value,start_time:document.getElementById('bd-start').value,end_time:document.getElementById('bd-end').value,failure_cause:c,failure_category:document.getElementById('bd-cat').value,severity:document.getElementById('bd-sev').value,technician:document.getElementById('bd-tech').value,notes:document.getElementById('bd-notes').value};
+  const payload={machine_code:m,breakdown_date:document.getElementById('bd-date').value,start_time:document.getElementById('bd-start').value,failure_cause:c,failure_category:document.getElementById('bd-cat').value,pic_gh:document.getElementById('bd-pic-gh').value};
   try{await fetch(`${API}/breakdown`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}catch{}
-  S.breakdowns.unshift({machine:m,cause:c,severity:payload.severity,start:'—',duration:'—',date:'Today',status:'open'});
+  S.breakdowns.unshift({machine:m,cause:c,severity:'warning',start:'—',duration:'—',date:'Today',status:'open'});
   renderTimeline(S.breakdowns,'breakdown-timeline',5);
   const kpiEl=document.getElementById('kpi-breakdowns');if(kpiEl)animNum(kpiEl,(parseFloat(kpiEl.textContent)||0)+1,0);
   addNotif(`⚡ ${m}: ${c}`,'red');showToast(`✅ Logged: ${m} — ${c}`,'green');
   closeModal('addBreakdownModal');
-  ['bd-machine','bd-cause','bd-tech','bd-notes','bd-start','bd-end'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['bd-machine','bd-cause','bd-pic-gh','bd-start'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   btn.disabled=false;btn.textContent='Save Breakdown';
   setTimeout(loadAll,600);
 }
@@ -1194,15 +1189,16 @@ let closingWO=null;
 function openCloseModal(id,machine,cause){
   closingWO=id;
   document.getElementById('cwo-info').textContent=`${machine} — ${cause}`;
-  const now=new Date();
-  document.getElementById('cwo-end').value=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  document.getElementById('cwo-notes').value='';
+  document.getElementById('cwo-end-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('cwo-pic-mtn').value='';
+  document.getElementById('cwo-resolution').value='';
+  document.getElementById('cwo-action').value='';
   openModal('closeWOModal');
 }
 async function submitCloseWO(){
   if(!closingWO)return;
   const btn=document.getElementById('cwo-btn');btn.disabled=true;btn.textContent='Saving…';
-  const payload={end_time:document.getElementById('cwo-end').value,notes:document.getElementById('cwo-notes').value};
+  const payload={end_date:document.getElementById('cwo-end-date').value,resolution:document.getElementById('cwo-resolution').value,action:document.getElementById('cwo-action').value,pic_mtn:document.getElementById('cwo-pic-mtn').value};
   try{await fetch(`${API}/breakdown/${closingWO}/close`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}catch{}
   showToast('✅ Work order ditutup','green');
   closeModal('closeWOModal');
