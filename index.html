@@ -766,6 +766,7 @@ textarea.form-input{resize:vertical;min-height:64px}
     <div class="form-grid">
       <div class="form-group full" id="cwo-info" style="color:var(--muted);font-size:13px"></div>
       <div class="form-group"><label class="form-label">Tanggal Selesai *</label><input type="date" class="form-input" id="cwo-end-date"/></div>
+      <div class="form-group"><label class="form-label">Waktu Selesai *</label><input type="time" class="form-input" id="cwo-end-time"/></div>
       <div class="form-group"><label class="form-label">PIC MTN</label><input type="text" class="form-input" id="cwo-pic-mtn" placeholder="Nama PIC MTN"/></div>
       <div class="form-group full"><label class="form-label">Penyelesaian Problem</label><textarea class="form-input" id="cwo-resolution" placeholder="Bagaimana problem diselesaikan…"></textarea></div>
       <div class="form-group full"><label class="form-label">Action</label><textarea class="form-input" id="cwo-action" placeholder="Tindakan yang dilakukan…"></textarea></div>
@@ -1128,7 +1129,7 @@ function renderLogTable(data){
       <td>${b.category||'—'}</td>
       <td>${b.cause}</td>
       <td>${b.pic_gh||'—'}</td>
-      <td>${b.end_date||'—'}</td>
+      <td>${b.end_date?b.end_date+' · '+(b.end_time||''):'—'}</td>
       <td>${penyelesaian}</td>
       <td>${b.pic_mtn||'—'}</td>
       <td>${b.duration}</td>
@@ -1244,7 +1245,9 @@ let closingWO=null;
 function openCloseModal(id,machine,cause){
   closingWO=id;
   document.getElementById('cwo-info').textContent=`${machine} — ${cause}`;
-  document.getElementById('cwo-end-date').value=new Date().toISOString().slice(0,10);
+  const now=new Date();
+  document.getElementById('cwo-end-date').value=now.toISOString().slice(0,10);
+  document.getElementById('cwo-end-time').value=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   document.getElementById('cwo-pic-mtn').value='';
   document.getElementById('cwo-resolution').value='';
   document.getElementById('cwo-action').value='';
@@ -1253,7 +1256,7 @@ function openCloseModal(id,machine,cause){
 async function submitCloseWO(){
   if(!closingWO)return;
   const btn=document.getElementById('cwo-btn');btn.disabled=true;btn.textContent='Saving…';
-  const payload={end_date:document.getElementById('cwo-end-date').value,resolution:document.getElementById('cwo-resolution').value,action:document.getElementById('cwo-action').value,pic_mtn:document.getElementById('cwo-pic-mtn').value};
+  const payload={end_date:document.getElementById('cwo-end-date').value,end_time:document.getElementById('cwo-end-time').value,resolution:document.getElementById('cwo-resolution').value,action:document.getElementById('cwo-action').value,pic_mtn:document.getElementById('cwo-pic-mtn').value};
   try{await fetch(`${API}/breakdown/${closingWO}/close`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}catch{}
   showToast('✅ Work order ditutup','green');
   closeModal('closeWOModal');

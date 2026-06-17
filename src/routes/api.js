@@ -123,6 +123,7 @@ router.get('/breakdowns', async (req, res, next) => {
       status: b.status,
       start: b.startTime ?? '',
       end_date: b.endDate ? b.endDate.toISOString().slice(0, 10) : '',
+      end_time: b.endTime ?? '',
       duration: `${b.durationHrs.toFixed(1)} hrs`,
       date: b.date.toISOString().slice(0, 10),
       pic_gh: b.picGh ?? '',
@@ -317,12 +318,12 @@ router.post('/breakdown', async (req, res, next) => {
 router.patch('/breakdown/:id/close', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    const { end_date, resolution, action, pic_mtn } = req.body;
+    const { end_date, end_time, resolution, action, pic_mtn } = req.body;
 
     const existing = await prisma.breakdown.findUnique({ where: { id } });
     if (!existing) return res.status(404).json({ error: `Work order #${id} not found` });
 
-    const endTime = nowTimeString();
+    const endTime = end_time || nowTimeString();
     const endDate = end_date ? new Date(end_date) : new Date();
     const durationHrs = computeDurationBetween(existing.date, existing.startTime, endDate, endTime);
 
