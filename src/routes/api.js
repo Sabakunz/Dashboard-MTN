@@ -191,27 +191,28 @@ router.get('/pareto-machines', async (req, res, next) => {
 });
 
 // ── GET /api/downtime-by-day ─────────────────────────
-// range=today  -> hourly buckets for the current day
-// range=week   -> last 7 days, one bucket per day (default)
-// range=month  -> last 12 calendar months, one bucket per month
+// period=today -> hourly buckets, 00 through 23, for the current day
+// period=week  -> calendar week, Monday through Sunday (default)
+// period=month -> calendar year, January through December
 router.get('/downtime-by-day', async (req, res, next) => {
   try {
-    const range = req.query.range || 'week';
+    const period = req.query.period || req.query.range || 'week';
     const now = new Date();
 
-    if (range === 'month') {
+    if (period === 'month') {
+      const year = now.getFullYear();
       const months = [];
-      for (let i = 11; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      for (let m = 0; m < 12; m++) {
+        const d = new Date(year, m, 1);
         months.push({
-          key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+          key: `${year}-${String(m + 1).padStart(2, '0')}`,
           day: d.toLocaleDateString('en-US', { month: 'short' }),
           hrs: 0,
         });
       }
 
-      const start = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      const start = new Date(year, 0, 1);
+      const end = new Date(year, 11, 31, 23, 59, 59, 999);
 
       const breakdowns = await prisma.breakdown.findMany({
         where: { date: { gte: start, lte: end } },
@@ -226,7 +227,7 @@ router.get('/downtime-by-day', async (req, res, next) => {
       return res.json(months.map(({ day, hrs }) => ({ day, hrs })));
     }
 
-    if (range === 'today') {
+    if (period === 'today') {
       const start = new Date(now);
       start.setHours(0, 0, 0, 0);
       const end = new Date(now);
@@ -238,7 +239,7 @@ router.get('/downtime-by-day', async (req, res, next) => {
 
       const hours = [];
       for (let h = 0; h < 24; h++) {
-        hours.push({ key: h, day: `${String(h).padStart(2, '0')}:00`, hrs: 0 });
+        hours.push({ key: h, day: String(h).padStart(2, '0'), hrs: 0 });
       }
 
       for (const b of breakdowns) {
@@ -250,20 +251,25 @@ router.get('/downtime-by-day', async (req, res, next) => {
       return res.json(hours.map(({ day, hrs }) => ({ day, hrs })));
     }
 
-    const totalDays = 6;
-    const end = new Date(now);
-    const start = new Date(end);
-    start.setDate(start.getDate() - totalDays);
-    start.setHours(0, 0, 0, 0);
+    // week: Monday through Sunday of the current calendar week
+    const dayOfWeek = now.getDay(); // 0 = Sunday .. 6 = Saturday
+    const mondayOffset = (dayOfWeek + 6) % 7;
+    const monday = new Date(now);
+    monday.setDate(monday.getDate() - mondayOffset);
+    monday.setHours(0, 0, 0, 0);
+
+    const sunday = new Date(monday);
+    sunday.setDate(sunday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
 
     const breakdowns = await prisma.breakdown.findMany({
-      where: { date: { gte: start, lte: end } },
+      where: { date: { gte: monday, lte: sunday } },
     });
 
     const days = [];
-    for (let i = totalDays; i >= 0; i--) {
-      const d = new Date(end);
-      d.setDate(d.getDate() - i);
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(d.getDate() + i);
       days.push({
         key: d.toISOString().slice(0, 10),
         day: d.toLocaleDateString('en-US', { weekday: 'short' }),

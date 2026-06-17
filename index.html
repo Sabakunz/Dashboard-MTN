@@ -115,7 +115,6 @@ body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--fo
 .card-sub{font-size:10px;color:var(--muted);margin-top:2px}
 .card-action{font-size:11px;color:var(--muted);cursor:pointer;background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-family:var(--font);white-space:nowrap;flex-shrink:0}
 .card-action:hover{color:var(--text)}
-.trend-tab.active{background:var(--accent);color:#000;border-color:var(--accent)}
 
 /* ═══════════════════════════════════════
    OEE GAUGE
@@ -568,15 +567,9 @@ textarea.form-input{resize:vertical;min-height:64px}
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><div><div class="card-title">Downtime Trend</div><div class="card-sub">Arahan untuk detail</div></div>
-          <div class="trend-tabs" style="display:flex;gap:4px">
-            <button class="card-action trend-tab" data-range="today" onclick="setTrendRange('today',this)">Harian</button>
-            <button class="card-action trend-tab active" data-range="week" onclick="setTrendRange('week',this)">Mingguan</button>
-            <button class="card-action trend-tab" data-range="month" onclick="setTrendRange('month',this)">Bulanan</button>
-          </div>
-        </div>
+        <div class="card-header"><div><div class="card-title">Downtime Trend</div><div class="card-sub">Mengikuti periode di atas (Harian/Mingguan/Bulanan)</div></div></div>
         <div class="trend-wrap"><canvas id="trendCanvas"></canvas><div class="trend-tooltip" id="trendTip"></div></div>
-        <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:9px;color:var(--muted);font-family:var(--mono)" id="trendXAxis"></div>
+        <div style="display:flex;justify-content:space-between;gap:4px;margin-top:5px;font-size:9px;color:var(--muted);font-family:var(--mono)" id="trendXAxis"></div>
       </div>
     </div>
 
@@ -830,7 +823,7 @@ textarea.form-input{resize:vertical;min-height:64px}
    STATE
 ══════════════════════════════════════ */
 const API = '/api';
-const S = { machines:[], breakdowns:[], pareto:[], paretoMachines:[], downtime:[], kpi:{}, sortKey:'name', sortDir:1, sf:'all', sv:'all', notifications:[], connected:false, trendRange:'week' };
+const S = { machines:[], breakdowns:[], pareto:[], paretoMachines:[], downtime:[], kpi:{}, sortKey:'name', sortDir:1, sf:'all', sv:'all', notifications:[], connected:false };
 const EMPTY_KPI = {breakdowns:0,downtime_hrs:0,availability:0,performance:0,quality:0,oee:0,mtbf:0,mttr:0};
 
 /* ══════════════════════════════════════
@@ -888,7 +881,7 @@ async function loadAll(){
     apiFetch(`/breakdowns?period=${period}`,[]),
     apiFetch(`/pareto?period=${period}`,[]),
     apiFetch(`/pareto-machines?period=${period}`,[]),
-    apiFetch(`/downtime-by-day?range=${S.trendRange||'week'}`,[]),
+    apiFetch(`/downtime-by-day?period=${period}`,[]),
   ]);
   S.kpi=kpi;S.machines=machines;S.breakdowns=breakdowns;S.pareto=pareto;S.paretoMachines=paretoMachines;S.downtime=downtime;
   renderKPIs(kpi);renderOEE(kpi);
@@ -896,13 +889,6 @@ async function loadAll(){
   renderTimeline(breakdowns,'breakdown-timeline',5);
   renderPareto(pareto);renderParetoMachines(paretoMachines);renderTrend(downtime);populateMachineDD(machines);
   lu.textContent='Updated '+new Date().toLocaleTimeString();
-}
-async function setTrendRange(range,el){
-  S.trendRange=range;
-  document.querySelectorAll('.trend-tab').forEach(e=>e.classList.remove('active'));
-  el.classList.add('active');
-  const downtime=await apiFetch(`/downtime-by-day?range=${range}`,[]);
-  S.downtime=downtime;renderTrend(downtime);
 }
 
 /* ══════════════════════════════════════
