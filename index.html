@@ -825,49 +825,11 @@ textarea.form-input{resize:vertical;min-height:64px}
 
 <script>
 /* ══════════════════════════════════════
-   STATE & DEMO DATA
+   STATE
 ══════════════════════════════════════ */
 const API = '/api';
 const S = { machines:[], breakdowns:[], pareto:[], paretoMachines:[], downtime:[], kpi:{}, sortKey:'name', sortDir:1, sf:'all', sv:'all', notifications:[], connected:false, trendRange:'week' };
-
-const DEMO = {
-  kpi:{breakdowns:14,downtime_hrs:37.5,availability:83.2,performance:91.4,quality:96.8,oee:73.5,mtbf:18.4,mttr:2.7},
-  machines:[
-    {name:'CNC-01',type:'Turning',  location:'Cell AD',status:'running',    availability:88.4,breakdowns:3,downtime_hrs:8.2, last_incident:'Spindle overheat'},
-    {name:'CNC-02',type:'Milling',  location:'Cell BC',status:'down',       availability:61.2,breakdowns:5,downtime_hrs:14.6,last_incident:'Tool holder broken'},
-    {name:'CNC-03',type:'Turning',  location:'Cell BC',status:'running',    availability:91.5,breakdowns:1,downtime_hrs:3.1, last_incident:'Coolant leak'},
-    {name:'CNC-04',type:'Grinding', location:'Cell AD',status:'idle',       availability:79.8,breakdowns:2,downtime_hrs:7.4, last_incident:'Belt wear'},
-    {name:'CNC-05',type:'Milling',  location:'Cell EF',status:'maintenance',availability:72.3,breakdowns:3,downtime_hrs:4.2, last_incident:'Scheduled PM'},
-    {name:'Cutting Yilmaz',type:'Cutting',      location:'Cell EF',status:'running',    availability:95.1,breakdowns:0,downtime_hrs:0.0, last_incident:'—'},
-  ],
-  breakdowns:[
-    {machine:'CNC-02',cause:'Tool holder broken', severity:'critical',start:'08:15',duration:'4.5 hrs',date:'Today',    status:'open'},
-    {machine:'CNC-01',cause:'Spindle overheat',   severity:'warning', start:'06:30',duration:'1.2 hrs',date:'Today',    status:'resolved'},
-    {machine:'CNC-04',cause:'Belt wear',          severity:'warning', start:'14:00',duration:'2.0 hrs',date:'Yesterday',status:'resolved'},
-    {machine:'CNC-03',cause:'Coolant leak',       severity:'resolved',start:'09:10',duration:'0.8 hrs',date:'Yesterday',status:'resolved'},
-    {machine:'CNC-05',cause:'Scheduled PM',       severity:'resolved',start:'08:00',duration:'4.2 hrs',date:'Monday',  status:'resolved'},
-    {machine:'CNC-01',cause:'Electrical fault',   severity:'critical',start:'11:30',duration:'1.0 hrs',date:'Monday',  status:'resolved'},
-    {machine:'CNC-02',cause:'Tool breakage',      severity:'warning', start:'15:20',duration:'2.0 hrs',date:'Sunday',  status:'resolved'},
-  ],
-  pareto:[
-    {cause:'Tool Wear / Breakage',count:6,pct:42},
-    {cause:'Spindle Issues',      count:3,pct:21},
-    {cause:'Coolant System',      count:2,pct:14},
-    {cause:'Belt / Drive Failure',count:2,pct:14},
-    {cause:'Electrical Fault',    count:1,pct:7},
-  ],
-  downtime:[
-    {day:'Mon',hrs:8.2},{day:'Tue',hrs:4.5},{day:'Wed',hrs:12.1},
-    {day:'Thu',hrs:3.8},{day:'Fri',hrs:6.4},{day:'Sat',hrs:2.5},{day:'Sun',hrs:0.0},
-  ],
-  paretoMachines:[
-    {machine:'CNC-02',count:5,pct:36},
-    {machine:'CNC-01',count:3,pct:21},
-    {machine:'CNC-04',count:2,pct:14},
-    {machine:'CNC-05',count:2,pct:14},
-    {machine:'CNC-03',count:1,pct:7},
-  ]
-};
+const EMPTY_KPI = {breakdowns:0,downtime_hrs:0,availability:0,performance:0,quality:0,oee:0,mtbf:0,mttr:0};
 
 /* ══════════════════════════════════════
    NAVIGATION
@@ -901,15 +863,15 @@ function toggleDrawer() {
 function setConn(on){
   S.connected=on;
   const dot=document.getElementById('connDot'),lbl=document.getElementById('connLabel');
-  dot.className='conn-dot'+(on?'':' off');lbl.textContent=on?'Live':'Demo mode';
+  dot.className='conn-dot'+(on?'':' off');lbl.textContent=on?'Live':'Offline';
 }
 
 /* ══════════════════════════════════════
    FETCH WITH FALLBACK
 ══════════════════════════════════════ */
-async function apiFetch(path,demo){
+async function apiFetch(path,fallback){
   try{const r=await fetch(API+path,{signal:AbortSignal.timeout(3000)});if(!r.ok)throw 0;setConn(true);return await r.json();}
-  catch{setConn(false);return demo;}
+  catch{setConn(false);return fallback;}
 }
 
 /* ══════════════════════════════════════
@@ -919,12 +881,12 @@ async function loadAll(){
   const period=document.getElementById('periodSelect').value;
   const lu=document.getElementById('lastUpdate'); lu.textContent='Updating…';
   const [kpi,machines,breakdowns,pareto,paretoMachines,downtime]=await Promise.all([
-    apiFetch(`/kpi?period=${period}`,DEMO.kpi),
-    apiFetch(`/machines?period=${period}`,DEMO.machines),
-    apiFetch(`/breakdowns?period=${period}`,DEMO.breakdowns),
-    apiFetch(`/pareto?period=${period}`,DEMO.pareto),
-    apiFetch(`/pareto-machines?period=${period}`,DEMO.paretoMachines),
-    apiFetch(`/downtime-by-day?range=${S.trendRange||'week'}`,DEMO.downtime),
+    apiFetch(`/kpi?period=${period}`,EMPTY_KPI),
+    apiFetch(`/machines?period=${period}`,[]),
+    apiFetch(`/breakdowns?period=${period}`,[]),
+    apiFetch(`/pareto?period=${period}`,[]),
+    apiFetch(`/pareto-machines?period=${period}`,[]),
+    apiFetch(`/downtime-by-day?range=${S.trendRange||'week'}`,[]),
   ]);
   S.kpi=kpi;S.machines=machines;S.breakdowns=breakdowns;S.pareto=pareto;S.paretoMachines=paretoMachines;S.downtime=downtime;
   renderKPIs(kpi);renderOEE(kpi);
@@ -937,7 +899,7 @@ async function setTrendRange(range,el){
   S.trendRange=range;
   document.querySelectorAll('.trend-tab').forEach(e=>e.classList.remove('active'));
   el.classList.add('active');
-  const downtime=await apiFetch(`/downtime-by-day?range=${range}`,DEMO.downtime);
+  const downtime=await apiFetch(`/downtime-by-day?range=${range}`,[]);
   S.downtime=downtime;renderTrend(downtime);
 }
 
@@ -1411,22 +1373,6 @@ function tick(){
 setInterval(tick,1000);tick();
 
 /* ══════════════════════════════════════
-   DEMO LIVE SIMULATION
-══════════════════════════════════════ */
-function simUpdate(){
-  if(S.machines.length){
-    const m=S.machines[Math.floor(Math.random()*S.machines.length)];
-    m.availability=Math.max(50,Math.min(99,(m.availability??80)+(Math.random()-.5)*1.5));
-  }
-  if(Math.random()<0.1){
-    const ms=['CNC-01','CNC-02','CNC-03'],cs=['Vibration detected','Tool wear warning','Coolant low'];
-    const m=ms[Math.floor(Math.random()*ms.length)],c=cs[Math.floor(Math.random()*cs.length)];
-    addNotif(`⚠ ${m}: ${c}`,'yellow');
-    if(Math.random()<0.4) showToast(`⚠ ${m}: ${c}`,'red',3500);
-  }
-}
-
-/* ══════════════════════════════════════
    RESIZE: redraw canvas
 ══════════════════════════════════════ */
 window.addEventListener('resize',()=>{if(S.downtime.length)renderTrend(S.downtime);});
@@ -1435,12 +1381,7 @@ window.addEventListener('resize',()=>{if(S.downtime.length)renderTrend(S.downtim
    INIT
 ══════════════════════════════════════ */
 loadAll();
-setInterval(loadAll,30000);setInterval(simUpdate,9000);
-setTimeout(()=>{
-  addNotif('⚡ CNC-02: Tool holder broken — machine down','red');
-  addNotif('⚠ CNC-01: Spindle overheat — resolved','yellow');
-  addNotif('✅ Dashboard running in demo mode','green');
-},900);
+setInterval(loadAll,30000);
 </script>
 </body>
 </html>
