@@ -1,11 +1,13 @@
 # Kontrol Relay 5V dengan ESP32
 
-Dua sketch Arduino untuk mengontrol modul relay 5V menggunakan ESP32:
+Dua sketch Arduino (untuk ESP32) untuk mengontrol modul relay 5V. Setiap
+sketch ada di folder tersendiri dengan nama yang sama seperti file `.ino`,
+sesuai aturan Arduino IDE — tinggal buka file `.ino`-nya langsung di Arduino IDE.
 
-| File | Mode Kontrol |
+| Folder / File | Mode Kontrol |
 |------|--------------|
-| `relay_switch_control.ino` | Saklar/push button fisik (tanpa WiFi) |
-| `relay_wifi_control.ino`   | WiFi + website kontrol lengkap (ter-embed di firmware) + saklar fisik tetap aktif |
+| `relay_switch_control/relay_switch_control.ino` | Saklar/push button fisik (tanpa WiFi) |
+| `relay_wifi_control/relay_wifi_control.ino`   | WiFi + website kontrol lengkap (ter-embed di firmware) + saklar fisik tetap aktif |
 
 ## Wiring
 
@@ -23,13 +25,13 @@ Saklar menggunakan `INPUT_PULLUP` internal ESP32, jadi tidak perlu resistor tamb
 > pin IN diberi sinyal LOW). Sketch ini sudah diset `RELAY_ACTIVE_LOW = true`.
 > Jika relay Anda justru menyala terbalik, ubah nilai itu menjadi `false`.
 
-## 1. `relay_switch_control.ino` — kontrol via saklar fisik
+## 1. `relay_switch_control/relay_switch_control.ino` — kontrol via saklar fisik
 
 - Setiap kali saklar ditekan, relay akan toggle (ON ↔ OFF).
 - Sudah dilengkapi debounce software (40ms) agar tidak "double trigger".
 - Upload langsung via Arduino IDE (board: "ESP32 Dev Module" atau sejenisnya).
 
-## 2. `relay_wifi_control.ino` — kontrol via WiFi + Website
+## 2. `relay_wifi_control/relay_wifi_control.ino` — kontrol via WiFi + Website
 
 ### Langkah setup
 
