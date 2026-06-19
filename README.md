@@ -1,130 +1,121 @@
 # Dashboard-MTN
 
-CNC machine maintenance monitoring dashboard — Express REST API,
-PostgreSQL (via Prisma), and a static HTML/JS frontend. Deployable as a
-single Express app (local/Render-style hosts) or as Netlify (static
-frontend + serverless function for the API).
+CNC machine maintenance monitoring dashboard — Express REST API, PostgreSQL
+(via Prisma, hosted on Supabase), and a React (Vite) frontend with admin
+login. Deployable as a single Express app (local/VPS-style hosts) or as
+Netlify (static frontend + serverless function for the API).
 
 ## Features
 
+- Admin login (JWT) — the dashboard and API are only reachable when logged in
 - KPI overview: breakdowns, downtime, availability, performance, quality, OEE, MTBF, MTTR
-- Per-machine status table with live availability/breakdown stats
-- Breakdown timeline + Pareto analysis of failure causes
-- Downtime-per-day chart (last 7 days)
+- Per-machine status table (Cluster/Line) with live availability/breakdown stats
+- Breakdown timeline + Pareto analysis of failure causes and per-machine frequency
+- Downtime trend chart (bar chart) for Harian/Mingguan/Bulanan, aligned to
+  calendar day/week(Mon-Sun)/year(Jan-Dec)
+- Repair Machine Order (RMO) workflow: open with PIC GH, close with PIC MTN,
+  resolution/action, duration computed from start/end date+time
 - Auto-refreshing dashboard (polls the API every 30s)
 - CSV import for bulk-loading maintenance/breakdown records
 
 ## Project structure
 
 ```
-index.html              # frontend (static HTML/JS)
-src/app.js              # Express app (API + static file serving)
-src/server.js           # local dev entrypoint (runs src/app.js)
-src/routes/api.js       # REST API routes
-src/db.js               # Prisma client
-netlify/functions/api.js# Netlify Function wrapper around src/app.js
-netlify.toml            # Netlify build/redirect config
+web/                     # React + Vite frontend
+  src/
+    App.jsx, AuthContext.jsx, AppContext.jsx, UIContext.jsx
+    pages/                # Login, Dashboard, Machines, Maintenance, Reports
+    components/           # Topbar, Sidebar, modals, charts, etc.
+  vite.config.js
+src/app.js               # Express app (API + serves web/dist)
+src/server.js            # local dev entrypoint (runs src/app.js)
+src/routes/api.js        # REST API routes (all but /health and /login require login)
+src/lib/auth.js           # JWT sign/verify middleware
+src/db.js                # Prisma client
+scripts/create-admin.js  # provision/reset the admin account
+netlify/functions/api.js # Netlify Function wrapper around the API router
+netlify.toml             # Netlify build/redirect config
 prisma/schema.prisma
-prisma/migrations/       # SQL migrations
-prisma/seed.js           # sample data
+prisma/migrations/        # SQL migrations
+prisma/seed.js            # sample data (local dev only)
 ```
 
 ## Local development
 
-1. Install dependencies:
+1. Install dependencies (root + frontend):
    ```bash
    npm install
+   npm install --prefix web
    ```
-2. Create a `.env` file (see `.env.example`) pointing `DATABASE_URL` at a Postgres database.
-3. Apply migrations and seed sample data:
+2. Create a `.env` file (see `.env.example`) with `DATABASE_URL`, `DIRECT_URL`,
+   and `JWT_SECRET` pointing at your Postgres database.
+3. Apply migrations:
    ```bash
    npx prisma migrate deploy
-   npm run seed
    ```
-4. Start the server:
+4. Create the admin account:
    ```bash
+   npm run create-admin -- <username> <password>
+   ```
+5. Build the frontend and start the server:
+   ```bash
+   npm run build --prefix web
    npm start
    ```
-5. Open http://localhost:3001 — the dashboard and API are served from the same port.
+6. Open http://localhost:3001 — log in, the dashboard and API are served from the same port.
 
-## Deploying online for free (Netlify + Neon)
+For frontend-only iteration with hot reload, run `npm run dev --prefix web`
+instead (it proxies `/api` to `http://localhost:3001`, so the backend must
+also be running).
 
-This repo includes a `netlify.toml`: the frontend (`index.html`) is served as a
-static site, and the API (`src/routes/api.js`) runs as a Netlify Function
-(`netlify/functions/api.js`), reachable at `/api/*` via a redirect.
+## Deploying online (Netlify + Supabase)
 
-1. **Create a free Postgres database on [Neon](https://neon.tech)**
-   - Sign up, create a project, and copy the connection string
-     (looks like `postgresql://user:pass@ep-xxxx.neon.tech/dbname?sslmode=require`).
-   - Use the **pooled** connection string (recommended for serverless functions).
+1. **Database**: create a free Postgres project on [Supabase](https://supabase.com).
+   Get two connection strings from the project's "Connect" dialog:
+   - **Transaction pooler** (port 6543) → `DATABASE_URL`
+   - **Session pooler or direct** (port 5432) → `DIRECT_URL`
 
-2. **Create a site on [Netlify](https://netlify.com)**
-   - Add new site → Import an existing project → connect this GitHub repo.
-   - Netlify will detect `netlify.toml` automatically:
-     - Build command: `npm install && npm run build`
-     - Publish directory: `.`
-     - Functions directory: `netlify/functions`
-   - In Site configuration → Environment variables, add `DATABASE_URL`
-     = your Neon connection string.
+   Append `?pgbouncer=true&connection_limit=5` to `DATABASE_URL`. **Don't use
+   `connection_limit=1`** — the dashboard fires up to 6 API requests in
+   parallel on every load/refresh, and a single pooled connection isn't
+   enough to serve all of them, causing some requests to hang.
 
-3. **Apply migrations and seed the database**
-   - The build runs `prisma migrate deploy` automatically (via `npm run build`),
-     so the schema stays in sync on every deploy.
-   - To seed sample data, run once locally against the same `DATABASE_URL`:
-     ```bash
-     DATABASE_URL="<your Neon connection string>" npm run seed
-     ```
+2. **Netlify site**: Import this repo. `netlify.toml` already configures:
+   - Build command: `npm install && npm run build && npm install --prefix web && npm run build --prefix web`
+   - Publish directory: `web/dist`
+   - Functions directory: `netlify/functions`
 
-4. Netlify will give you a public URL (e.g. `https://your-site.netlify.app`)
-   serving both the dashboard and the `/api/*` endpoints — open it to test live.
+   In Site configuration → Environment variables, add `DATABASE_URL`,
+   `DIRECT_URL`, and `JWT_SECRET` (same values as your local `.env`).
 
-### Keeping the database in sync
+3. **Migrate + create the admin** against the Supabase database (run locally,
+   pointed at the same `DATABASE_URL`/`DIRECT_URL` Netlify uses):
+   ```bash
+   npx prisma migrate deploy
+   npm run create-admin -- <username> <password>
+   ```
 
-If the dashboard shows no data ("Demo mode" / empty tables), the database is
-likely empty or migrations haven't been applied:
+4. Trigger a deploy. Netlify gives you a public URL — open it, log in with
+   the admin account you created.
 
-```bash
-# Point at your deployed database and apply the schema
-DATABASE_URL="<your Neon connection string>" npx prisma migrate deploy
+### Troubleshooting
 
-# Load sample data
-DATABASE_URL="<your Neon connection string>" npm run seed
-```
-
-### Troubleshooting: data doesn't update after deploy (e.g. "Save Breakdown" does nothing)
-
-1. **Check `/api/health`** — open `https://<your-site>.netlify.app/api/health`.
-   - `{"ok":true,"machines":N}` → the function can reach Postgres.
-   - `{"ok":false,"error":"..."}` → read the error (usually a connection or
-     missing-table issue) and check the Netlify function logs
-     (Site → Logs → Functions) for the full stack trace.
-   - A 404 here means the `/api/*` redirect isn't reaching the function —
-     double-check `netlify.toml` is in the repo root and the site was
-     redeployed after it was added.
-
-2. **`DATABASE_URL` not set in Netlify** — Site configuration → Environment
-   variables. Must be set for the **Functions** scope (not just builds).
-   After adding/changing it, trigger a new deploy (env vars only apply to
-   new deploys).
-
-3. **Use Neon's pooled connection string** — Netlify Functions are
-   serverless; each invocation can open a new DB connection and a
-   non-pooled Neon connection will run out of connections quickly. Use the
-   connection string with `-pooler` in the hostname and append
-   `&pgbouncer=true&connection_limit=1` (see `.env.example`).
-
-4. **Schema not migrated on the deployed DB** — run step above
-   (`prisma migrate deploy` against the Neon `DATABASE_URL`) any time
-   `prisma/schema.prisma` changes. The Netlify build also runs this
-   automatically via `npm run build`, but only if `DATABASE_URL` is
-   available at build time too.
+- **`/api/health`** (no login required) — open `https://<site>/api/health`.
+  `{"ok":true,"machines":N}` means the function can reach Postgres.
+- **Login works but the dashboard never finishes "Updating…"** — almost
+  always `connection_limit` set too low on `DATABASE_URL` (see above).
+- **POST/PATCH requests fail with no error** — `express.json()` doesn't parse
+  the body correctly under `serverless-http` because the mock request object
+  sets `complete: true` upfront, tricking `body-parser`'s "already read"
+  check. `netlify/functions/api.js` works around this with a manual
+  `JSON.parse` of the raw body — don't replace it with bare `express.json()`.
 
 ## Importing maintenance data
 
 Use the "Import CSV" sidebar button to upload a `.csv` file with these columns:
 
 ```
-machine_name, machine_type, breakdown_date, start_time, end_time, failure_cause, category, technician, notes
+machine_name, machine_cluster, machine_line, breakdown_date, start_time, end_time, failure_cause, category, technician, notes
 ```
 
 New machines are created automatically if they don't already exist.
@@ -135,4 +126,5 @@ New machines are created automatically if they don't already exist.
   `npx prisma migrate dev` to create a new migration.
 - Track production counts per machine to compute real Performance/Quality
   (currently defaulted per machine in the `Machine` table).
-- Add authentication if this will hold real factory data.
+- Support multiple admin accounts (the `Admin` table already supports more
+  than one row; there's just no UI yet to add a second one).

@@ -3,3 +3,5 @@ node_modules/
 *.log
 .netlify/
 PG Local.session.sql
+web/node_modules/
+web/dist/

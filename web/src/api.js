@@ -1,0 +1,56 @@
+export const API = '/api';
+
+export function authHeader() {
+  return { Authorization: 'Bearer ' + (localStorage.getItem('admin_token') || '') };
+}
+
+export function getStoredAuth() {
+  return {
+    token: localStorage.getItem('admin_token'),
+    username: localStorage.getItem('admin_username'),
+  };
+}
+
+export function storeAuth(token, username) {
+  localStorage.setItem('admin_token', token);
+  localStorage.setItem('admin_username', username);
+}
+
+export function clearAuth() {
+  localStorage.removeItem('admin_token');
+  localStorage.removeItem('admin_username');
+}
+
+// GET with a fallback value on any failure (network, 401, non-2xx).
+// Calls onUnauthorized() instead of throwing when the token is invalid/expired.
+export async function apiFetch(path, fallback, onUnauthorized) {
+  try {
+    const r = await fetch(API + path, { signal: AbortSignal.timeout(5000), headers: authHeader() });
+    if (r.status === 401) { onUnauthorized?.(); return fallback; }
+    if (!r.ok) throw new Error('Request failed');
+    return await r.json();
+  } catch {
+    return fallback;
+  }
+}
+
+// POST/PATCH/etc with a JSON body. Throws on failure so callers can show an error.
+export async function apiSend(path, method, body, onUnauthorized) {
+  const r = await fetch(API + path, {
+    method,
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (r.status === 401) { onUnauthorized?.(); throw new Error('Session expired'); }
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+export async function apiSendForm(path, formData, onUnauthorized) {
+  const r = await fetch(API + path, { method: 'POST', headers: authHeader(), body: formData });
+  if (r.status === 401) { onUnauthorized?.(); throw new Error('Session expired'); }
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
