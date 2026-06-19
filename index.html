@@ -453,6 +453,9 @@ textarea.form-input{resize:vertical;min-height:64px}
 </style>
 </head>
 <body>
+<script>
+if(!localStorage.getItem('admin_token')) location.href='/login.html';
+</script>
 <div class="shell">
 
 <!-- ══ TOPBAR ══ -->
@@ -469,7 +472,7 @@ textarea.form-input{resize:vertical;min-height:64px}
     <span><span class="conn-dot connecting" id="connDot"></span><span class="conn-label" id="connLabel">Menghubungkan…</span></span>
     <span class="date-label" id="clockLabel"></span>
     <div class="notif-btn" onclick="toggleNotifications()">🔔<span class="notif-badge" id="notifBadge" style="display:none">0</span></div>
-    <div class="avatar" onclick="showToast('👤 Login Sebagai AdminMTC','green')">OP</div>
+    <div class="avatar" id="avatarBtn" onclick="confirmLogout()" title="Klik untuk logout">OP</div>
   </div>
 </header>
 
@@ -864,9 +867,16 @@ function setConn(on){
 /* ══════════════════════════════════════
    FETCH WITH FALLBACK
 ══════════════════════════════════════ */
+function authHeader(){return {'Authorization':'Bearer '+(localStorage.getItem('admin_token')||'')};}
+function logout(){localStorage.removeItem('admin_token');localStorage.removeItem('admin_username');location.href='/login.html';}
+function confirmLogout(){if(confirm('Logout dari dashboard?'))logout();}
 async function apiFetch(path,fallback){
-  try{const r=await fetch(API+path,{signal:AbortSignal.timeout(3000)});if(!r.ok)throw 0;setConn(true);return await r.json();}
-  catch{setConn(false);return fallback;}
+  try{
+    const r=await fetch(API+path,{signal:AbortSignal.timeout(3000),headers:authHeader()});
+    if(r.status===401){logout();return fallback;}
+    if(!r.ok)throw 0;
+    setConn(true);return await r.json();
+  }catch{setConn(false);return fallback;}
 }
 
 /* ══════════════════════════════════════
@@ -1025,7 +1035,7 @@ function closeDetail(){document.getElementById('detailPanel').classList.remove('
 async function setStatus(name,status){
   const m=S.machines.find(x=>x.name===name);if(!m)return;
   m.status=status;
-  try{await fetch(`${API}/machines/${name}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});}catch{}
+  try{await fetch(`${API}/machines/${name}/status`,{method:'PATCH',headers:{'Content-Type':'application/json',...authHeader()},body:JSON.stringify({status})});}catch{}
   renderMachineTable(S.machines);showDetail(name);
   showToast(`${name} → ${status}`,status==='down'?'red':'green');
 }
@@ -1179,7 +1189,7 @@ async function submitBD(){
   if(!m||!validMachine||!c)return;
   const btn=document.getElementById('bd-btn');btn.disabled=true;btn.textContent='Saving…';
   const payload={machine_code:m,breakdown_date:document.getElementById('bd-date').value,start_time:document.getElementById('bd-start').value,failure_cause:c,failure_category:document.getElementById('bd-cat').value,pic_gh:document.getElementById('bd-pic-gh').value};
-  try{await fetch(`${API}/breakdown`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}catch{}
+  try{await fetch(`${API}/breakdown`,{method:'POST',headers:{'Content-Type':'application/json',...authHeader()},body:JSON.stringify(payload)});}catch{}
   S.breakdowns.unshift({machine:m,cause:c,severity:'warning',start:'—',duration:'—',date:'Today',status:'open'});
   renderTimeline(S.breakdowns,'breakdown-timeline',5);
   const kpiEl=document.getElementById('kpi-breakdowns');if(kpiEl)animNum(kpiEl,(parseFloat(kpiEl.textContent)||0)+1,0);
@@ -1209,7 +1219,7 @@ async function submitCloseWO(){
   if(!closingWO)return;
   const btn=document.getElementById('cwo-btn');btn.disabled=true;btn.textContent='Saving…';
   const payload={end_date:document.getElementById('cwo-end-date').value,end_time:document.getElementById('cwo-end-time').value,resolution:document.getElementById('cwo-resolution').value,action:document.getElementById('cwo-action').value,pic_mtn:document.getElementById('cwo-pic-mtn').value};
-  try{await fetch(`${API}/breakdown/${closingWO}/close`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});}catch{}
+  try{await fetch(`${API}/breakdown/${closingWO}/close`,{method:'PATCH',headers:{'Content-Type':'application/json',...authHeader()},body:JSON.stringify(payload)});}catch{}
   showToast('✅ Work order ditutup','green');
   closeModal('closeWOModal');
   btn.disabled=false;btn.textContent='Tutup WO';
@@ -1229,7 +1239,7 @@ async function submitMachine(){
   if(!name)return;
   const btn=document.getElementById('am-btn');btn.disabled=true;btn.textContent='Saving…';
   try{
-    const r=await fetch(`${API}/machines`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,cluster,line})});
+    const r=await fetch(`${API}/machines`,{method:'POST',headers:{'Content-Type':'application/json',...authHeader()},body:JSON.stringify({name,cluster,line})});
     if(!r.ok){const e=await r.json();throw new Error(e.error||'Failed');}
     showToast(`✅ Mesin ${name} ditambahkan`,'green');
     closeModal('addMachineModal');
@@ -1254,7 +1264,7 @@ async function doImport(){
   const btn=document.getElementById('importBtn');btn.disabled=true;btn.textContent='Importing…';
   const formData=new FormData();formData.append('file',pendingImportFile);
   try{
-    const r=await fetch(`${API}/import`,{method:'POST',body:formData});
+    const r=await fetch(`${API}/import`,{method:'POST',headers:authHeader(),body:formData});
     if(!r.ok)throw 0;
     const result=await r.json();
     showToast(`✅ Imported ${result.imported}/${result.total} rows`,'green');addNotif('📥 CSV data imported','green');
@@ -1370,6 +1380,11 @@ window.addEventListener('resize',()=>{if(S.downtime.length)renderTrend(S.downtim
 /* ══════════════════════════════════════
    INIT
 ══════════════════════════════════════ */
+(function initAvatar(){
+  const username=localStorage.getItem('admin_username')||'';
+  const el=document.getElementById('avatarBtn');
+  if(el&&username){el.textContent=username.slice(0,2).toUpperCase();el.title=`${username} — klik untuk logout`;}
+})();
 loadAll();
 setInterval(loadAll,30000);
 </script>

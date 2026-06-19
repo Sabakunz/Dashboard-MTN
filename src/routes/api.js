@@ -1,14 +1,17 @@
 const express = require('express');
 const multer = require('multer');
+const bcrypt = require('bcryptjs');
 const prisma = require('../db');
 const { getPeriodRange, daysInRange } = require('../lib/period');
+const { signToken, requireAuth } = require('../lib/auth');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
 // ── GET /api/health ──────────────────────────────────
-// Quick diagnostic: confirms the function can reach Postgres.
+// Quick diagnostic: confirms the function can reach Postgres. Left public
+// (no auth) so it stays useful for uptime checks even when logged out.
 router.get('/health', async (req, res) => {
   try {
     const [{ count }] = await prisma.$queryRaw`SELECT count(*)::int AS count FROM "Machine"`;
@@ -16,6 +19,32 @@ router.get('/health', async (req, res) => {
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
+});
+
+// ── POST /api/login ───────────────────────────────────
+router.post('/login', async (req, res, next) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: 'username and password are required' });
+    }
+
+    const admin = await prisma.admin.findUnique({ where: { username } });
+    if (!admin) return res.status(401).json({ error: 'Invalid username or password' });
+
+    const valid = await bcrypt.compare(password, admin.passwordHash);
+    if (!valid) return res.status(401).json({ error: 'Invalid username or password' });
+
+    res.json({ token: signToken(admin), username: admin.username });
+  } catch (err) { next(err); }
+});
+
+// Everything below requires a valid login.
+router.use(requireAuth);
+
+// ── GET /api/me ────────────────────────────────────────
+router.get('/me', (req, res) => {
+  res.json({ username: req.admin.username });
 });
 
 // ── GET /api/machines ──────────────────────────────

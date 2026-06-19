@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Login — Maintenance Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090c;--s1:#111116;--s2:#18181f;--s3:#22222c;
+  --border:#2a2a38;--text:#e8e8f0;--muted:#5a5a78;
+  --accent:#f0a500;--red:#ff4455;
+  --font:'Inter',sans-serif;--display:'Rajdhani',sans-serif;--r:10px;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:32px 28px;width:100%;max-width:360px}
+.logo{font-family:var(--display);font-weight:700;font-size:22px;margin-bottom:4px}
+.logo span{color:var(--accent)}
+.sub{color:var(--muted);font-size:12px;margin-bottom:24px}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.form-input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;font-family:var(--font)}
+.form-input:focus{outline:none;border-color:var(--accent)}
+.btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px;font-family:var(--font)}
+.btn:disabled{opacity:.6;cursor:default}
+.err{color:var(--red);font-size:12px;margin-top:10px;min-height:14px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">Maintenance<span> Dashboard</span></div>
+  <div class="sub">Masuk sebagai Admin untuk mengakses dashboard</div>
+  <div class="form-group">
+    <label class="form-label">Username</label>
+    <input class="form-input" id="username" autocomplete="username" autofocus/>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Password</label>
+    <input class="form-input" id="password" type="password" autocomplete="current-password"/>
+  </div>
+  <button class="btn" id="btn" onclick="login()">Masuk</button>
+  <div class="err" id="err"></div>
+</div>
+<script>
+const API='/api';
+async function login(){
+  const username=document.getElementById('username').value.trim();
+  const password=document.getElementById('password').value;
+  const err=document.getElementById('err');err.textContent='';
+  if(!username||!password){err.textContent='Username dan password wajib diisi';return;}
+  const btn=document.getElementById('btn');btn.disabled=true;btn.textContent='Memproses…';
+  try{
+    const r=await fetch(`${API}/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||'Login gagal');
+    localStorage.setItem('admin_token',data.token);
+    localStorage.setItem('admin_username',data.username);
+    location.href='/';
+  }catch(e){
+    err.textContent=e.message;
+    btn.disabled=false;btn.textContent='Masuk';
+  }
+}
+document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+document.getElementById('username').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+
+if(localStorage.getItem('admin_token')) location.href='/';
+</script>
+</body>
+</html>
