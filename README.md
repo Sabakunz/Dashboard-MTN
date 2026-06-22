@@ -8,15 +8,20 @@ Netlify (static frontend + serverless function for the API).
 ## Features
 
 - Admin login (JWT) — the dashboard and API are only reachable when logged in
-- KPI overview: breakdowns, downtime, availability, performance, quality, OEE, MTBF, MTTR
-- Per-machine status table (Cluster/Line) with live availability/breakdown stats
+- Dark/light theme toggle (persisted, defaults to OS preference)
+- KPI overview: breakdowns, downtime, Availability, MTBF, MTTR
+  - Availability = ((Jam Kerja Harian × hari periode) − downtime) / (Jam Kerja Harian × hari periode) × 100%
+  - "Jam Kerja Harian" is set per machine (`plannedHours`) when adding/editing it
+- Per-machine status table (Cluster/Line) with live availability/breakdown stats;
+  machines can be added and edited (name, cluster, line, Jam Kerja Harian) from the UI
 - Breakdown timeline + Pareto analysis of failure causes and per-machine frequency
-- Downtime trend chart (bar chart) for Harian/Mingguan/Bulanan, aligned to
-  calendar day/week(Mon-Sun)/year(Jan-Dec)
+- MTBF/MTTR bar chart and Downtime trend chart (Harian/Mingguan/Bulanan, aligned to
+  calendar day/week(Mon-Sun)/year(Jan-Dec))
 - Repair Machine Order (RMO) workflow: open with PIC GH, close with PIC MTN,
-  resolution/action, duration computed from start/end date+time
+  resolution/action, duration computed from start/end date+time (counted as machine downtime)
 - Auto-refreshing dashboard (polls the API every 30s)
-- CSV import for bulk-loading maintenance/breakdown records
+- CSV import/export for bulk-loading and exporting maintenance/breakdown records
+  (see "Exporting data to Excel / pgAdmin" below)
 
 ## Project structure
 
@@ -109,6 +114,30 @@ also be running).
   sets `complete: true` upfront, tricking `body-parser`'s "already read"
   check. `netlify/functions/api.js` works around this with a manual
   `JSON.parse` of the raw body — don't replace it with bare `express.json()`.
+
+## Exporting data to Excel / pgAdmin
+
+All Work Order (RMO) records are exposed through a single Postgres view,
+`work_order_export` (defined in
+`prisma/migrations/20260619100000_add_work_order_export_view/migration.sql`),
+joining `Breakdown` with `Machine` and renaming columns to their Indonesian
+labels (mesin, cluster, line, tanggal, jenis_problem, pic_gh, pic_mtn, dst).
+Both the website and pgAdmin read from the same view, so the columns/format
+are always identical.
+
+- **From the website**: Sidebar/Drawer → "Export Log Work Order", or
+  Laporan page → "Export Log Work Order (CSV)". Downloads a `.csv` that
+  opens directly in Excel.
+- **From pgAdmin**: connect to the same Supabase database → Query Tool → run
+  ```sql
+  SELECT * FROM work_order_export ORDER BY tanggal DESC;
+  ```
+  then right-click the result grid → **Export...** → CSV. Useful for ad-hoc
+  filtering/joins before exporting, without needing a website feature for
+  every possible report.
+- **Monitoring via SQL** without installing anything: Supabase dashboard →
+  **SQL Editor** works the same way as pgAdmin's Query Tool, directly in the
+  browser.
 
 ## Importing maintenance data
 

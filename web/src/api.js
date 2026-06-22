@@ -54,3 +54,17 @@ export async function apiSendForm(path, formData, onUnauthorized) {
   if (!r.ok) throw new Error(data.error || 'Request failed');
   return data;
 }
+
+// Downloads a file (e.g. CSV) that requires the auth header -- a plain
+// <a href> can't send Authorization, so fetch as a blob and save it.
+export async function apiDownload(path, filename, onUnauthorized) {
+  const r = await fetch(API + path, { headers: authHeader() });
+  if (r.status === 401) { onUnauthorized?.(); throw new Error('Session expired'); }
+  if (!r.ok) throw new Error('Download gagal');
+  const blob = await r.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}

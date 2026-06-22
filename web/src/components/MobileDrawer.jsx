@@ -1,12 +1,15 @@
 import { useUI } from '../UIContext.jsx';
 import { useApp } from '../AppContext.jsx';
 import { useToast } from '../ToastContext.jsx';
+import { useAuth } from '../AuthContext.jsx';
 import { exportCSV } from '../lib/exportCSV.js';
+import { apiDownload } from '../api.js';
 
 export default function MobileDrawer() {
   const { drawerOpen, setDrawerOpen, navigate, openModal } = useUI();
   const { kpi, machines } = useApp();
   const showToast = useToast();
+  const { logout } = useAuth();
 
   function go(page) {
     navigate(page);
@@ -20,6 +23,15 @@ export default function MobileDrawer() {
     exportCSV(machines);
     showToast('✅ Diekspor ke CSV', 'green');
     setDrawerOpen(false);
+  }
+  async function doExportWorkOrders() {
+    setDrawerOpen(false);
+    try {
+      await apiDownload('/export/work-orders', `work-orders-${new Date().toISOString().slice(0, 10)}.csv`, logout);
+      showToast('✅ Log Work Order diekspor ke CSV', 'green');
+    } catch (e) {
+      showToast(`❌ ${e.message}`, 'red');
+    }
   }
 
   return (
@@ -37,7 +49,8 @@ export default function MobileDrawer() {
         <div className="sb-item" onClick={() => go('reports')}><span className="sb-icon">📈</span>Reports</div>
         <div className="sb-section">Data</div>
         <div className="sb-item" onClick={() => open('import')}><span className="sb-icon">📥</span>Import CSV</div>
-        <div className="sb-item" onClick={doExport}><span className="sb-icon">📤</span>Export CSV</div>
+        <div className="sb-item" onClick={doExport}><span className="sb-icon">📤</span>Export Mesin (CSV)</div>
+        <div className="sb-item" onClick={doExportWorkOrders}><span className="sb-icon">📑</span>Export Log Work Order</div>
         <div className="sb-item" onClick={() => open('addBreakdown')}><span className="sb-icon">➕</span>RMO</div>
         <div className="sb-item" onClick={() => open('addMachine')}><span className="sb-icon">🏭</span>Tambah Mesin</div>
       </div>

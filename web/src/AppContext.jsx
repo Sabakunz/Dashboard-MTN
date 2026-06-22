@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext.jsx';
 
 const AppContext = createContext(null);
 
-const EMPTY_KPI = { breakdowns: 0, downtime_hrs: 0, availability: 0, performance: 0, quality: 0, oee: 0, mtbf: 0, mttr: 0 };
+const EMPTY_KPI = { breakdowns: 0, downtime_hrs: 0, planned_hours: 0, availability: 0, performance: 0, quality: 0, oee: 0, mtbf: 0, mttr: 0 };
 
 export function AppProvider({ children }) {
   const { logout } = useAuth();

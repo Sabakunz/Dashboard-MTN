@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useUI } from '../UIContext.jsx';
 import { useApp } from '../AppContext.jsx';
 import { useAuth } from '../AuthContext.jsx';
+import { useTheme } from '../ThemeContext.jsx';
 
 function tickLabel() {
   const now = new Date();
@@ -20,6 +21,7 @@ export default function Topbar() {
   const { page, navigate, toggleDrawer, toggleNotif } = useUI();
   const { connected, notifications } = useApp();
   const { username, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [clock, setClock] = useState(tickLabel());
 
   useEffect(() => {
@@ -45,6 +47,9 @@ export default function Topbar() {
       <div className="topbar-right">
         <span><span className={'conn-dot' + (connected ? '' : ' off')}></span><span className="conn-label">{connected ? 'Live' : 'Offline'}</span></span>
         <span className="date-label">{clock}</span>
+        <button className="btn-icon" onClick={toggleTheme} title={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}>
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
         <div className="notif-btn" onClick={toggleNotif}>
           🔔
           {unread > 0 && <span className="notif-badge">{unread}</span>}

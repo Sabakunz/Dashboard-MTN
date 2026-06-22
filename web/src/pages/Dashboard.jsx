@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useApp } from '../AppContext.jsx';
 import { useUI } from '../UIContext.jsx';
 import KpiRow from '../components/KpiRow.jsx';
-import OeeCard from '../components/OeeCard.jsx';
+import AvailabilityCard from '../components/AvailabilityCard.jsx';
+import MtbfMttrChart from '../components/MtbfMttrChart.jsx';
 import DowntimeTrend from '../components/DowntimeTrend.jsx';
 import MachineTable from '../components/MachineTable.jsx';
 import Timeline from '../components/Timeline.jsx';
@@ -34,8 +35,9 @@ export default function Dashboard() {
 
       <KpiRow kpi={kpi} />
 
-      <div className="row2">
-        <OeeCard kpi={kpi} />
+      <div className="row4">
+        <AvailabilityCard kpi={kpi} />
+        <MtbfMttrChart kpi={kpi} />
         <DowntimeTrend days={downtime} />
       </div>
 

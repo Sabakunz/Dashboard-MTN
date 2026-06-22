@@ -5,7 +5,7 @@ import { apiSend } from '../api.js';
 import { useAuth } from '../AuthContext.jsx';
 
 export default function DetailPanel() {
-  const { detailMachine, closeDetail } = useUI();
+  const { detailMachine, closeDetail, openModal } = useUI();
   const { machines, breakdowns, loadAll } = useApp();
   const showToast = useToast();
   const { logout } = useAuth();
@@ -35,11 +35,12 @@ export default function DetailPanel() {
       <div className="detail-header">
         <div>
           <div style={{ fontFamily: 'var(--display)', fontSize: 17, fontWeight: 700 }}>{m.name}</div>
-          <div style={{ fontSize: 11, color: 'var(--muted)' }}>{[m.cluster, m.line].filter(Boolean).join(' · ') || '—'}</div>
+          <div style={{ fontSize: 11, color: 'var(--muted)' }}>{[m.cluster, m.line].filter(Boolean).join(' · ') || '—'} · {m.plannedHours ?? 16} jam/hari</div>
         </div>
         <button className="modal-close" onClick={closeDetail}>×</button>
       </div>
       <div className="detail-body">
+        <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => openModal('editMachine', m)}>✎ Edit Info Mesin</button>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           <div className="detail-stat"><div className="detail-stat-val" style={{ color: col }}>{av.toFixed(1)}%</div><div className="detail-stat-lbl">Availability</div></div>
           <div className="detail-stat"><div className="detail-stat-val">{m.breakdowns}</div><div className="detail-stat-lbl">Breakdowns</div></div>

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from './AuthContext.jsx';
+import { ThemeProvider } from './ThemeContext.jsx';
 import { ToastProvider } from './ToastContext.jsx';
 import { AppProvider, useApp } from './AppContext.jsx';
 import { UIProvider, useUI } from './UIContext.jsx';
@@ -68,10 +69,12 @@ function AuthGate() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <AuthGate />
-      </ToastProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <AuthGate />
+        </ToastProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

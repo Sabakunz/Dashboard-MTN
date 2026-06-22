@@ -75,6 +75,7 @@ router.get('/machines', async (req, res, next) => {
         cluster: m.cluster,
         line: m.line,
         status: m.status,
+        plannedHours: m.plannedHours,
         availability,
         breakdowns: m.breakdowns.length,
         downtime_hrs: downtimeHrs,
@@ -122,6 +123,7 @@ router.get('/kpi', async (req, res, next) => {
     res.json({
       breakdowns: breakdownCount,
       downtime_hrs: downtimeHrs,
+      planned_hours: Number(plannedHrsTotal.toFixed(1)),
       availability,
       performance,
       quality,
@@ -383,7 +385,7 @@ router.patch('/breakdown/:id/close', async (req, res, next) => {
 // Register a new machine so it can receive work orders.
 router.post('/machines', async (req, res, next) => {
   try {
-    const { name, cluster, line } = req.body;
+    const { name, cluster, line, plannedHours } = req.body;
     if (!name) {
       return res.status(400).json({ error: 'name is required' });
     }
@@ -392,7 +394,12 @@ router.post('/machines', async (req, res, next) => {
     if (existing) return res.status(409).json({ error: `Machine "${name}" already exists` });
 
     const machine = await prisma.machine.create({
-      data: { name, cluster: cluster || '', line: line || '' },
+      data: {
+        name,
+        cluster: cluster || '',
+        line: line || '',
+        plannedHours: plannedHours ? Number(plannedHours) : 16,
+      },
     });
 
     res.status(201).json(machine);
@@ -417,6 +424,61 @@ router.patch('/machines/:name/status', async (req, res, next) => {
     });
 
     res.json(machine);
+  } catch (err) { next(err); }
+});
+
+// ── PATCH /api/machines/:name ──────────────────────────
+// Edit machine details: name, cluster, line, plannedHours (Jam Kerja Harian).
+router.patch('/machines/:name', async (req, res, next) => {
+  try {
+    const existing = await prisma.machine.findUnique({ where: { name: req.params.name } });
+    if (!existing) return res.status(404).json({ error: `Machine "${req.params.name}" not found` });
+
+    const { name, cluster, line, plannedHours } = req.body;
+    if (name && name !== existing.name) {
+      const clash = await prisma.machine.findUnique({ where: { name } });
+      if (clash) return res.status(409).json({ error: `Machine "${name}" already exists` });
+    }
+
+    const machine = await prisma.machine.update({
+      where: { name: req.params.name },
+      data: {
+        name: name || existing.name,
+        cluster: cluster ?? existing.cluster,
+        line: line ?? existing.line,
+        plannedHours: plannedHours != null ? Number(plannedHours) : existing.plannedHours,
+      },
+    });
+
+    res.json(machine);
+  } catch (err) { next(err); }
+});
+
+// ── GET /api/export/work-orders ────────────────────────
+// CSV export of the work_order_export SQL view -- the same view that can
+// be queried directly in pgAdmin (Query Tool -> Export to CSV).
+router.get('/export/work-orders', async (req, res, next) => {
+  try {
+    const rows = await prisma.$queryRaw`SELECT * FROM "work_order_export"`;
+    if (!rows.length) {
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="work-orders.csv"');
+      return res.send('');
+    }
+
+    const headers = Object.keys(rows[0]);
+    const csvLines = [headers.join(',')];
+    for (const row of rows) {
+      csvLines.push(headers.map((h) => {
+        const v = row[h];
+        const s = v instanceof Date ? v.toISOString().slice(0, 10) : (v ?? '');
+        return `"${String(s).replace(/"/g, '""')}"`;
+      }).join(','));
+    }
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="work-orders-${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.send(csvLines.join('\n'));
   } catch (err) { next(err); }
 });
 
