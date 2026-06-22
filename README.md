@@ -116,6 +116,32 @@ also be running).
 4. Trigger a deploy. Netlify gives you a public URL — open it, log in with
    the admin account you created.
 
+## Deploying online (Render + Supabase)
+
+An alternative to Netlify when its free build-minutes run out. No code changes
+needed — Render just runs this app as a single Express server (`npm start`),
+serving both the built React app and the API from one process, instead of
+splitting frontend/static + serverless function the way Netlify does.
+
+1. **Database**: same Supabase setup as above (see step 1 in the Netlify
+   section) — reuse the same `DATABASE_URL`/`DIRECT_URL`.
+
+2. **Render**: [render.com](https://render.com) → New → **Blueprint** → connect
+   this repo. `render.yaml` already configures:
+   - Build command: `npm install && npm run build && npm install --prefix web && npm run build --prefix web`
+   - Start command: `npm start`
+   - Plan: free
+
+   Render will prompt for the env vars marked `sync: false` in `render.yaml`:
+   `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET` (same values as Netlify/`.env`).
+
+3. Deploy. Render gives you a `*.onrender.com` URL.
+
+**Free tier behavior**: the service spins down after 15 minutes with no
+traffic and takes ~30s to wake up on the next request — fine for a demo, not
+for a 24/7 production site. Netlify and Render can run side by side off the
+same Supabase database; nothing needs to be removed from either.
+
 ### Troubleshooting
 
 - **`/api/health`** (no login required) — open `https://<site>/api/health`.
