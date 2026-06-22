@@ -10,7 +10,7 @@ import Timeline from '../components/Timeline.jsx';
 import ParetoList from '../components/ParetoList.jsx';
 
 export default function Dashboard() {
-  const { kpi, machines, breakdowns, pareto, paretoMachines, downtime, period, setPeriod, lastUpdate, loadAll } = useApp();
+  const { kpi, machines, breakdowns, pareto, paretoMachines, downtime, mtbfMttrTrend, period, setPeriod, lastUpdate, loadAll } = useApp();
   const { navigate, openModal } = useUI();
 
   useEffect(() => { loadAll(period); }, [period]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -35,10 +35,13 @@ export default function Dashboard() {
 
       <KpiRow kpi={kpi} />
 
-      <div className="row4">
+      <div className="row2">
         <AvailabilityCard kpi={kpi} />
-        <MtbfMttrChart kpi={kpi} />
         <DowntimeTrend days={downtime} />
+      </div>
+
+      <div className="row2-equal">
+        <MtbfMttrChart data={mtbfMttrTrend} />
       </div>
 
       <MachineTable machines={machines} />

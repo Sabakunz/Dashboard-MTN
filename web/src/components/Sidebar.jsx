@@ -30,8 +30,7 @@ export default function Sidebar() {
       <div className="sb-section">Gambaran Umum</div>
       <div className={'sb-item' + (page === 'dashboard' ? ' active' : '')} onClick={() => navigate('dashboard')}><span className="sb-icon">📊</span>Dashboard</div>
       <div className={'sb-item' + (page === 'machines' ? ' active' : '')} onClick={() => navigate('machines')}><span className="sb-icon">📋</span>Semua Mesin</div>
-      <div className="sb-item" onClick={() => navigate('maintenance')}><span className="sb-icon">⚠️</span>Breakdowns<span className="sb-badge">{kpi.breakdowns ?? '—'}</span></div>
-      <div className={'sb-item' + (page === 'maintenance' ? ' active' : '')} onClick={() => navigate('maintenance')}><span className="sb-icon">🔧</span>Maintenance</div>
+      <div className={'sb-item' + (page === 'maintenance' ? ' active' : '')} onClick={() => navigate('maintenance')}><span className="sb-icon">⚠️</span>Breakdowns<span className="sb-badge">{kpi.breakdowns ?? '—'}</span></div>
       <div className={'sb-item' + (page === 'reports' ? ' active' : '')} onClick={() => navigate('reports')}><span className="sb-icon">📈</span>Laporan</div>
       <div className="sb-section">Data</div>
       <div className="sb-item" onClick={() => openModal('import')}><span className="sb-icon">📥</span>Import CSV</div>

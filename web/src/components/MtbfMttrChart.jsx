@@ -1,34 +1,23 @@
-export default function MtbfMttrChart({ kpi }) {
-  const mtbf = kpi.mtbf ?? 0;
-  const mttr = kpi.mttr ?? 0;
-  const max = Math.max(mtbf, mttr, 1);
+import LineTrendChart from './LineTrendChart.jsx';
 
+// Placeholder targets -- replace with whatever values make sense for your
+// machines/process once decided.
+const MTBF_TARGET = 100; // jam
+const MTTR_TARGET = 2; // jam
+
+export default function MtbfMttrChart({ data }) {
   return (
-    <div className="card">
-      <div className="card-header"><div><div className="card-title">MTBF & MTTR</div><div className="card-sub">Mean Time Between/To Repair</div></div></div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 6 }}>
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 5 }}>
-            <span style={{ color: 'var(--muted)' }}>MTBF · jam antara problem</span>
-            <span style={{ fontFamily: 'var(--mono)', fontWeight: 600 }}>{mtbf.toFixed(1)} jam</span>
-          </div>
-          <div className="oee-bar" style={{ height: 8 }}>
-            <div className="oee-fill" style={{ background: 'var(--purple)', width: `${(mtbf / max) * 100}%` }}></div>
-          </div>
-        </div>
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 5 }}>
-            <span style={{ color: 'var(--muted)' }}>MTTR · jam untuk perbaikan</span>
-            <span style={{ fontFamily: 'var(--mono)', fontWeight: 600 }}>{mttr.toFixed(1)} jam</span>
-          </div>
-          <div className="oee-bar" style={{ height: 8 }}>
-            <div className="oee-fill" style={{ background: 'var(--green)', width: `${(mttr / max) * 100}%` }}></div>
-          </div>
-        </div>
-      </div>
-      <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--border)', fontSize: 11, color: 'var(--muted)', lineHeight: 1.6 }}>
-        <strong style={{ color: 'var(--text)' }}>MTBF</strong> tinggi & <strong style={{ color: 'var(--text)' }}>MTTR</strong> rendah = mesin lebih reliable.
-      </div>
-    </div>
+    <>
+      <LineTrendChart
+        title="MTBF Trend" sub="Mean Time Between Failure (jam antara problem)"
+        data={data} valueKey="mtbf" color="#a855f7" unit="jam"
+        target={MTBF_TARGET} targetLabel={`${MTBF_TARGET} jam`}
+      />
+      <LineTrendChart
+        title="MTTR Trend" sub="Mean Time To Repair (jam untuk perbaikan)"
+        data={data} valueKey="mttr" color="#00d084" unit="jam"
+        target={MTTR_TARGET} targetLabel={`${MTTR_TARGET} jam`}
+      />
+    </>
   );
 }

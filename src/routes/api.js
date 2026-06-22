@@ -318,6 +318,101 @@ router.get('/downtime-by-day', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ── GET /api/mtbf-mttr-trend ──────────────────────────
+// Same bucketing as /downtime-by-day (today=hourly, week=Mon-Sun,
+// month=Jan-Dec), but each bucket reports MTBF/MTTR computed from that
+// bucket's own breakdown count + planned hours, instead of a single
+// aggregate for the whole period.
+router.get('/mtbf-mttr-trend', async (req, res, next) => {
+  try {
+    const period = req.query.period || 'week';
+    const now = new Date();
+
+    const machines = await prisma.machine.findMany();
+    const plannedPerDay = machines.reduce((s, m) => s + m.plannedHours, 0);
+
+    function bucketMtbfMttr(downtimeHrs, count, plannedHrs) {
+      const uptimeHrs = Math.max(0, plannedHrs - downtimeHrs);
+      const mtbf = count > 0 ? uptimeHrs / count : uptimeHrs;
+      const mttr = count > 0 ? downtimeHrs / count : 0;
+      return { mtbf: Number(mtbf.toFixed(1)), mttr: Number(mttr.toFixed(1)) };
+    }
+
+    if (period === 'month') {
+      const year = now.getFullYear();
+      const months = [];
+      for (let m = 0; m < 12; m++) {
+        const daysInMonth = new Date(year, m + 1, 0).getDate();
+        months.push({
+          key: `${year}-${String(m + 1).padStart(2, '0')}`,
+          day: new Date(year, m, 1).toLocaleDateString('en-US', { month: 'short' }),
+          downtimeHrs: 0, count: 0, plannedHrs: plannedPerDay * daysInMonth,
+        });
+      }
+
+      const start = new Date(year, 0, 1);
+      const end = new Date(year, 11, 31, 23, 59, 59, 999);
+      const breakdowns = await prisma.breakdown.findMany({ where: { date: { gte: start, lte: end } } });
+
+      for (const b of breakdowns) {
+        const key = `${b.date.getUTCFullYear()}-${String(b.date.getUTCMonth() + 1).padStart(2, '0')}`;
+        const entry = months.find((m) => m.key === key);
+        if (entry) { entry.downtimeHrs += b.durationHrs; entry.count += 1; }
+      }
+
+      return res.json(months.map((m) => ({ day: m.day, ...bucketMtbfMttr(m.downtimeHrs, m.count, m.plannedHrs) })));
+    }
+
+    if (period === 'today') {
+      const start = new Date(now); start.setHours(0, 0, 0, 0);
+      const end = new Date(now); end.setHours(23, 59, 59, 999);
+      const breakdowns = await prisma.breakdown.findMany({ where: { date: { gte: start, lte: end } } });
+
+      const hours = [];
+      for (let h = 0; h < 24; h++) {
+        hours.push({ day: String(h).padStart(2, '0'), downtimeHrs: 0, count: 0, plannedHrs: plannedPerDay / 24 });
+      }
+      for (const b of breakdowns) {
+        const hour = b.startTime ? Number(b.startTime.split(':')[0]) : 0;
+        const entry = hours[Number.isNaN(hour) ? 0 : hour];
+        if (entry) { entry.downtimeHrs += b.durationHrs; entry.count += 1; }
+      }
+
+      return res.json(hours.map((h) => ({ day: h.day, ...bucketMtbfMttr(h.downtimeHrs, h.count, h.plannedHrs) })));
+    }
+
+    // week: Monday through Sunday of the current calendar week
+    const dayOfWeek = now.getDay();
+    const mondayOffset = (dayOfWeek + 6) % 7;
+    const monday = new Date(now);
+    monday.setDate(monday.getDate() - mondayOffset);
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(sunday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+
+    const breakdowns = await prisma.breakdown.findMany({ where: { date: { gte: monday, lte: sunday } } });
+
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(d.getDate() + i);
+      days.push({
+        key: d.toISOString().slice(0, 10),
+        day: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        downtimeHrs: 0, count: 0, plannedHrs: plannedPerDay,
+      });
+    }
+    for (const b of breakdowns) {
+      const key = b.date.toISOString().slice(0, 10);
+      const entry = days.find((d) => d.key === key);
+      if (entry) { entry.downtimeHrs += b.durationHrs; entry.count += 1; }
+    }
+
+    res.json(days.map((d) => ({ day: d.day, ...bucketMtbfMttr(d.downtimeHrs, d.count, d.plannedHrs) })));
+  } catch (err) { next(err); }
+});
+
 // ── POST /api/breakdown ──────────────────────────────
 // Repair Machine Order (RMO) form submission
 router.post('/breakdown', async (req, res, next) => {

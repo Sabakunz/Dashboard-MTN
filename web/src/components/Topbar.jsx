@@ -7,7 +7,7 @@ import { useTheme } from '../ThemeContext.jsx';
 function tickLabel() {
   const now = new Date();
   return now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ' ' +
-    now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 const NAV_ITEMS = [

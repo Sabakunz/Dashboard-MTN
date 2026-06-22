@@ -44,7 +44,7 @@ body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--fo
 .nav-item{font-size:12.5px;color:var(--muted);cursor:pointer;padding:4px 0;transition:color .15s;position:relative;white-space:nowrap;user-select:none}
 .nav-item:hover{color:var(--text)}
 .nav-item.active{color:var(--accent);font-weight:500}
-.nav-item.active::after{content:'';position:absolute;bottom:-19px;left:0;right:0;height:2px;background:var(--accent)}
+.nav-item.active::after{content:'';position:absolute;bottom:-14px;left:0;right:0;height:2px;background:var(--accent)}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0}
 .conn-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px;transition:background .3s}
 .conn-dot.off{background:var(--red)}.conn-dot.connecting{background:var(--yellow);animation:pulse 1.2s infinite}
@@ -103,6 +103,7 @@ body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--fo
    GRID LAYOUTS
 ═══════════════════════════════════════ */
 .row2{display:grid;grid-template-columns:1.6fr 1fr;gap:12px}
+.row2-equal{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .row4{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px}
 
 /* ═══════════════════════════════════════
@@ -371,7 +372,7 @@ textarea.form-input{resize:vertical;min-height:64px}
   .oee-wrap{flex-direction:column;align-items:flex-start}
   .oee-gauge{margin:0 auto}
   .oee-breakdown{width:100%;min-width:0}
-  .row2,.row4{grid-template-columns:1fr}
+  .row2,.row2-equal,.row4{grid-template-columns:1fr}
   .maint-grid{grid-template-columns:1fr 1fr}
   .report-grid{grid-template-columns:1fr}
   .machine-table th:nth-child(2),.machine-table td:nth-child(2),
@@ -401,7 +402,7 @@ textarea.form-input{resize:vertical;min-height:64px}
 @media(min-width:768px) and (max-width:1024px){
   :root{--sidebar-w:180px}
   .kpi-row{grid-template-columns:repeat(3,1fr)}
-  .row2,.row4{grid-template-columns:1fr}
+  .row2,.row2-equal,.row4{grid-template-columns:1fr}
   .nav-links .nav-item:nth-child(n+4){display:none}
   .date-label{display:none}
   .notif-panel{top:calc(var(--topbar-h) + 6px);right:12px;width:300px;border-radius:12px;max-height:400px}

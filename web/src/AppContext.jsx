@@ -15,6 +15,7 @@ export function AppProvider({ children }) {
   const [pareto, setPareto] = useState([]);
   const [paretoMachines, setParetoMachines] = useState([]);
   const [downtime, setDowntime] = useState([]);
+  const [mtbfMttrTrend, setMtbfMttrTrend] = useState([]);
   const [connected, setConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState('—');
   const [notifications, setNotifications] = useState([]);
@@ -35,23 +36,24 @@ export function AppProvider({ children }) {
     if (loadingRef.current) return;
     loadingRef.current = true;
     setLastUpdate('Updating…');
-    const [k, m, b, pr, pm, dt] = await Promise.all([
+    const [k, m, b, pr, pm, dt, mt] = await Promise.all([
       apiFetch(`/kpi?period=${usePeriod}`, EMPTY_KPI, logout),
       apiFetch(`/machines?period=${usePeriod}`, [], logout),
       apiFetch(`/breakdowns?period=${usePeriod}`, [], logout),
       apiFetch(`/pareto?period=${usePeriod}`, [], logout),
       apiFetch(`/pareto-machines?period=${usePeriod}`, [], logout),
       apiFetch(`/downtime-by-day?period=${usePeriod}`, [], logout),
+      apiFetch(`/mtbf-mttr-trend?period=${usePeriod}`, [], logout),
     ]);
     setConnected(true);
-    setKpi(k); setMachines(m); setBreakdowns(b); setPareto(pr); setParetoMachines(pm); setDowntime(dt);
+    setKpi(k); setMachines(m); setBreakdowns(b); setPareto(pr); setParetoMachines(pm); setDowntime(dt); setMtbfMttrTrend(mt);
     setLastUpdate('Updated ' + new Date().toLocaleTimeString());
     loadingRef.current = false;
   }, [period, logout]);
 
   return (
     <AppContext.Provider value={{
-      period, setPeriod, kpi, machines, breakdowns, pareto, paretoMachines, downtime,
+      period, setPeriod, kpi, machines, breakdowns, pareto, paretoMachines, downtime, mtbfMttrTrend,
       connected, lastUpdate, loadAll, notifications, addNotif, markAllRead, clearNotifs,
     }}>
       {children}
