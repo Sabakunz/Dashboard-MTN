@@ -348,17 +348,17 @@ router.get('/mtbf-mttr-trend', async (req, res, next) => {
   try {
     const period = req.query.period || 'week';
     const now = req.query.date ? new Date(req.query.date) : new Date();
-    const MTTR_TARGET_MULTIPLIER = 0.1;
+    const MTTR_TARGET_HOURS = 1; // fixed org-wide target: repair within 1 jam
 
     const machines = await prisma.machine.findMany({ where: req.query.machine ? { name: req.query.machine } : {} });
     const plannedPerDay = machines.reduce((s, m) => s + m.plannedHours, 0);
-    const mttrTarget = Number((plannedPerDay * MTTR_TARGET_MULTIPLIER).toFixed(1));
+    const mttrTarget = MTTR_TARGET_HOURS;
 
     // Target MTBF for a bucket = that bucket's full planned hours (the
     // ceiling you'd hit with zero breakdowns) -- naturally scales with how
-    // many days/hours are in the bucket, e.g. a 31-day month has a higher
-    // target than a 28-day one. Target MTTR stays flat (repair time isn't
-    // tied to calendar length).
+    // many days/hours are in the bucket, based on each machine's Jam Kerja
+    // Harian, e.g. a 31-day month has a higher target than a 28-day one.
+    // Target MTTR stays flat at 1 jam regardless of calendar length.
     function bucket(downtimeHrs, count, plannedHrs) {
       const uptimeHrs = Math.max(0, plannedHrs - downtimeHrs);
       const mtbf = count > 0 ? uptimeHrs / count : uptimeHrs;

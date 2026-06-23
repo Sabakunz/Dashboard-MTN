@@ -17,9 +17,12 @@ Netlify (static frontend + serverless function for the API).
   dashboard shows the top 5 (sortable), "Semua Mesin" page shows all
 - Breakdown timeline + Pareto analysis of failure causes and per-machine frequency
 - MTBF/MTTR combo charts (bar = actual, line = target) with an Excel-style data table
-  underneath and a TOTAL column; target MTBF scales with the bucket's planned hours
-  (a 31-day month has a higher target than a 28-day one), target MTTR stays flat
-  (Jam Kerja Harian × 0.1) since repair time isn't tied to calendar length
+  underneath and a TOTAL column
+  - MTBF = (Jam Kerja Mesin − Downtime) / Jumlah Frekuensi Kerusakan; target MTBF
+    scales with the bucket's planned hours (a 31-day month has a higher target than
+    a 28-day one), based on each machine's Jam Kerja Harian
+  - MTTR = Jumlah Waktu Downtime / Jumlah Frekuensi Kerusakan; target MTTR is a
+    fixed 1 jam org-wide, regardless of calendar length or machine
 - Downtime trend chart (Harian/Mingguan/Bulanan, aligned to calendar
   day/week(Mon-Sun)/year(Jan-Dec))
 - Date picker (from 2026-01-01) to view any specific day/week/month instead of only
