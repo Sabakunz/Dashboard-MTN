@@ -1,4 +1,9 @@
 {
   "buildCommand": "npm run build && npm install --prefix web && npm run build --prefix web",
-  "outputDirectory": "web/dist"
+  "outputDirectory": "web/dist",
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  }
 }
