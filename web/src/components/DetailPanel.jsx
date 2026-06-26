@@ -15,7 +15,7 @@ export default function DetailPanel() {
   async function setStatus(status) {
     if (!m) return;
     try {
-      await apiSend(`/machines/${m.name}/status`, 'PATCH', { status }, logout);
+      await apiSend(`/machines/${m.name}/status`, 'POST', { status }, logout);
     } catch { /* best effort, same as original */ }
     showToast(`${m.name} → ${status}`, status === 'down' ? 'red' : 'green');
     loadAll();

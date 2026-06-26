@@ -520,9 +520,12 @@ router.post('/breakdown', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ── PATCH /api/breakdown/:id/close ────────────────────
+// ── POST /api/breakdown/:id/close ─────────────────────
 // Close a work order: maintenance member marks repair as done.
-router.patch('/breakdown/:id/close', async (req, res, next) => {
+// (POST, not PATCH/PUT -- this Vercel deployment's edge network returns a
+// platform-level 404 for PATCH/PUT/DELETE/OPTIONS on /api/*, only GET/POST
+// reach the serverless function, so every mutation here uses POST.)
+router.post('/breakdown/:id/close', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
     const { end_date, end_time, resolution, action, pic_mtn } = req.body;
@@ -581,8 +584,8 @@ router.post('/machines', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ── PATCH /api/machines/:name/status ───────────────────
-router.patch('/machines/:name/status', async (req, res, next) => {
+// ── POST /api/machines/:name/status ────────────────────
+router.post('/machines/:name/status', async (req, res, next) => {
   try {
     const { status } = req.body;
     const allowed = ['running', 'down', 'idle', 'maintenance'];
@@ -602,9 +605,9 @@ router.patch('/machines/:name/status', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ── PATCH /api/machines/:name ──────────────────────────
+// ── POST /api/machines/:name ───────────────────────────
 // Edit machine details: name, master data fields, cluster/line/shift, plannedHours.
-router.patch('/machines/:name', async (req, res, next) => {
+router.post('/machines/:name', async (req, res, next) => {
   try {
     const existing = await prisma.machine.findUnique({ where: { name: req.params.name } });
     if (!existing) return res.status(404).json({ error: `Machine "${req.params.name}" not found` });
