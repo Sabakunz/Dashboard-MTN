@@ -38,7 +38,7 @@ export default function DonutChart({ data, labelKey }) {
 
     const rootStyle = getComputedStyle(document.documentElement);
     ctx.fillStyle = rootStyle.getPropertyValue('--text');
-    ctx.font = '700 15px Rajdhani, sans-serif';
+    ctx.font = '700 15px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(String(data.length), cx, cy - 6);

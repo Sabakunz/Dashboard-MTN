@@ -7,7 +7,7 @@
   --border:#2a2a38;--text:#e8e8f0;--muted:#5a5a78;--dim:#3a3a52;
   --accent:#f0a500;--accent2:#ff6b35;--green:#00d084;--red:#ff4455;
   --blue:#4488ff;--purple:#a855f7;--yellow:#f0a500;
-  --font:'Inter',sans-serif;--mono:'DM Mono',monospace;--display:'Rajdhani',sans-serif;
+  --font:'Inter',sans-serif;--mono:'DM Mono',monospace;--display:'Inter',sans-serif;
   --r:10px;--topbar-h:52px;--bottomnav-h:62px;
 
   /* Theme-aware surface/elevation tokens. Defaults here = current dark

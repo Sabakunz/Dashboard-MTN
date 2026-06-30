@@ -83,12 +83,12 @@ export default function Dashboard() {
           <Timeline items={filteredBreakdowns} limit={5} />
         </div>
         <div className="card">
-          <div className="card-header"><div><div className="card-title">Top Penyebab Kerusakan</div><div className="card-sub">Pareto</div></div></div>
+          <div className="card-header"><div><div className="card-title">Top Penyebab Kerusakan</div></div></div>
           <DonutChart data={filteredPareto} labelKey="cause" />
           <ParetoList data={filteredPareto} labelKey="cause" />
         </div>
         <div className="card">
-          <div className="card-header"><div><div className="card-title">Frekuensi Breakdown per Mesin</div><div className="card-sub">Top 10 · Pareto</div></div></div>
+          <div className="card-header"><div><div className="card-title">Frekuensi Breakdown per Mesin</div></div></div>
           <ParetoList data={filteredParetoMachines} labelKey="machine" />
         </div>
       </div>

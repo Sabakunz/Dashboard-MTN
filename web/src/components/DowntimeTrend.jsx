@@ -91,7 +91,7 @@ export default function DowntimeTrend({ days }) {
   return (
     <div className="card">
       <div className="card-header">
-        <div><div className="card-title">Downtime Trend</div><div className="card-sub">Mengikuti periode di atas (Harian/Mingguan/Bulanan) — scroll untuk zoom</div></div>
+        <div><div className="card-title">Downtime Trend</div></div>
         {zoom < 1 && <button className="card-action" onClick={() => { setZoom(1); setPanStart(0); }}>Reset zoom</button>}
       </div>
       <div className="trend-wrap" ref={wrapRef}>

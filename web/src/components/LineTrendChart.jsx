@@ -7,7 +7,7 @@ const MIN_VISIBLE = 3;
 // category (including a TOTAL column, shown with a divider before it).
 // Mouse wheel over the chart zooms in/out on the day-by-day columns; the
 // TOTAL column (if present) always stays pinned at the end.
-export default function LineTrendChart({ title, sub, data, valueKey, targetKey, color, unit }) {
+export default function LineTrendChart({ title, data, valueKey, targetKey, color, unit }) {
   const canvasRef = useRef(null);
   const tipRef = useRef(null);
   const wrapRef = useRef(null);
@@ -118,7 +118,7 @@ export default function LineTrendChart({ title, sub, data, valueKey, targetKey, 
   return (
     <div className="card">
       <div className="card-header">
-        <div><div className="card-title">{title}</div><div className="card-sub">{sub} — scroll untuk zoom</div></div>
+        <div><div className="card-title">{title}</div></div>
         {zoom < 1 && <button className="card-action" onClick={() => { setZoom(1); setPanStart(0); }}>Reset zoom</button>}
       </div>
       <div className="trend-wrap" style={{ height: 130 }} ref={wrapRef}><canvas ref={canvasRef}></canvas><div className="trend-tooltip" ref={tipRef}></div></div>

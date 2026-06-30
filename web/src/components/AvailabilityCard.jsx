@@ -8,7 +8,7 @@ export default function AvailabilityCard({ kpi }) {
   return (
     <div className="card">
       <div className="card-header">
-        <div><div className="card-title">Availability Mesin</div><div className="card-sub">((Jam Kerja Harian × Hari) − Downtime) / (Jam Kerja Harian × Hari) × 100%</div></div>
+        <div><div className="card-title">Availability Mesin</div></div>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 16 }}>
         <div style={{ fontFamily: 'var(--display)', fontSize: 40, fontWeight: 700, color: col }}>{av.toFixed(1)}%</div>
