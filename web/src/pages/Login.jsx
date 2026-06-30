@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { User, Lock } from 'lucide-react';
 import { useAuth } from '../AuthContext.jsx';
 
 export default function Login() {
@@ -27,15 +28,20 @@ export default function Login() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <div className="logo">Maintenance<span> Dashboard</span></div>
-        <div className="login-sub">Masuk sebagai Admin untuk mengakses dashboard</div>
+        <div className="logo" style={{ marginBottom: 20 }}>Maintenance<span> Dashboard</span></div>
         <div className="form-group" style={{ marginBottom: 14 }}>
           <label className="form-label">Username</label>
-          <input className="form-input" autoFocus value={username} onChange={(e) => setUsername(e.target.value)} onKeyDown={onKeyDown} autoComplete="username" />
+          <div className="input-icon-wrap">
+            <User size={15} className="input-icon" />
+            <input className="form-input has-icon" autoFocus value={username} onChange={(e) => setUsername(e.target.value)} onKeyDown={onKeyDown} autoComplete="username" />
+          </div>
         </div>
         <div className="form-group" style={{ marginBottom: 14 }}>
           <label className="form-label">Password</label>
-          <input className="form-input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={onKeyDown} autoComplete="current-password" />
+          <div className="input-icon-wrap">
+            <Lock size={15} className="input-icon" />
+            <input className="form-input has-icon" type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={onKeyDown} autoComplete="current-password" />
+          </div>
         </div>
         <button className="btn primary" style={{ width: '100%', padding: 11 }} disabled={busy} onClick={submit}>
           {busy ? 'Memproses…' : 'Masuk'}
