@@ -41,11 +41,11 @@ export default function AddMachineModal() {
         shift: shift.trim(),
         plannedHours: Number(plannedHours) || 16,
       }, logout);
-      showToast(`✅ Mesin ${n} ditambahkan`, 'green');
+      showToast(`Mesin ${n} ditambahkan`, 'green');
       closeModal();
       loadAll();
     } catch (e) {
-      showToast(`❌ ${e.message}`, 'red');
+      showToast(e.message, 'red');
     }
     setBusy(false);
   }

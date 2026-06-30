@@ -45,12 +45,12 @@ export default function AddBreakdownModal() {
         failure_cause: c, failure_category: category, pic_gh: picGh, severity,
       }, logout);
       const notifColor = SEVERITIES.find((s) => s.key === severity)?.notifColor || 'yellow';
-      addNotif(`⚡ ${m}: ${c}`, notifColor);
-      showToast(`✅ Logged: ${m} — ${c}`, 'green');
+      addNotif(`${m}: ${c}`, notifColor);
+      showToast(`Logged: ${m} — ${c}`, 'green');
       closeModal();
       loadAll();
     } catch (e) {
-      showToast(`❌ ${e.message}`, 'red');
+      showToast(e.message, 'red');
     }
     setBusy(false);
   }

@@ -1,3 +1,4 @@
+import { TrendingUp, FolderUp, Download, FileText, Factory, X } from 'lucide-react';
 import { useUI } from '../UIContext.jsx';
 import { useToast } from '../ToastContext.jsx';
 import { useAuth } from '../AuthContext.jsx';
@@ -20,9 +21,9 @@ export default function MobileDrawer() {
     setDrawerOpen(false);
     try {
       await apiDownload('/export-machines', `mesin-history-${new Date().toISOString().slice(0, 10)}.csv`, logout);
-      showToast('✅ Diekspor ke CSV', 'green');
+      showToast('Diekspor ke CSV', 'green');
     } catch (e) {
-      showToast(`❌ ${e.message}`, 'red');
+      showToast(e.message, 'red');
     }
   }
 
@@ -32,15 +33,15 @@ export default function MobileDrawer() {
       <div className="mobile-sidebar">
         <div className="drawer-header">
           <div className="logo">Maintenance<span> Dashboard</span></div>
-          <button className="modal-close" onClick={() => setDrawerOpen(false)}>×</button>
+          <button className="modal-close" onClick={() => setDrawerOpen(false)}><X size={20} /></button>
         </div>
         <div className="sb-section">Gambaran Umum</div>
-        <div className="sb-item" onClick={() => go('reports')}><span className="sb-icon">📈</span>Laporan</div>
+        <div className="sb-item" onClick={() => go('reports')}><span className="sb-icon"><TrendingUp size={16} /></span>Laporan</div>
         <div className="sb-section">Data</div>
-        <div className="sb-item" onClick={() => open('import')}><span className="sb-icon">📥</span>Import CSV</div>
-        <div className="sb-item" onClick={doExport}><span className="sb-icon">📤</span>Export Mesin (CSV)</div>
-        <div className="sb-item" onClick={() => open('exportWorkOrders')}><span className="sb-icon">📑</span>Export Log Work Order</div>
-        <div className="sb-item" onClick={() => open('addMachine')}><span className="sb-icon">🏭</span>Tambah Mesin</div>
+        <div className="sb-item" onClick={() => open('import')}><span className="sb-icon"><FolderUp size={16} /></span>Import CSV</div>
+        <div className="sb-item" onClick={doExport}><span className="sb-icon"><Download size={16} /></span>Export Mesin (CSV)</div>
+        <div className="sb-item" onClick={() => open('exportWorkOrders')}><span className="sb-icon"><FileText size={16} /></span>Export Log Work Order</div>
+        <div className="sb-item" onClick={() => open('addMachine')}><span className="sb-icon"><Factory size={16} /></span>Tambah Mesin</div>
       </div>
     </div>
   );

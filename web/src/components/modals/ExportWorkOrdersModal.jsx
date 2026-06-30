@@ -30,7 +30,7 @@ export default function ExportWorkOrdersModal() {
       await apiDownload(`/export-work-orders${qs}`, `work-orders-${date}.csv`, logout);
       closeModal();
     } catch (e) {
-      showToast(`❌ ${e.message}`, 'red');
+      showToast(e.message, 'red');
     }
     setBusy(false);
   }

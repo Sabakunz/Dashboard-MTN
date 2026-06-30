@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Search, Circle, CheckCircle2, ChevronUp, ChevronDown } from 'lucide-react';
 import { useApp } from '../AppContext.jsx';
 import { useUI } from '../UIContext.jsx';
 
@@ -40,7 +41,7 @@ export default function Maintenance() {
     });
   }, [breakdowns, search, filter, sortKey, sortDir]);
 
-  const arrow = (k) => (sortKey === k ? (sortDir === 1 ? ' ▲' : ' ▼') : '');
+  const arrow = (k) => (sortKey === k ? (sortDir === 1 ? <ChevronUp size={12} style={{ verticalAlign: 'middle' }} /> : <ChevronDown size={12} style={{ verticalAlign: 'middle' }} />) : null);
   const thCls = (k) => (sortKey === k ? 'sorted' : '');
 
   return (
@@ -67,7 +68,7 @@ export default function Maintenance() {
       <div className="card">
         <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
           <div className="search-wrap" style={{ flex: 1, minWidth: 140 }}>
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"><Search size={14} /></span>
             <input className="search-input" placeholder="Cari log…" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <div className="filter-row">
@@ -101,7 +102,7 @@ export default function Maintenance() {
                     <td>{b.machine}</td>
                     <td style={{ color: 'var(--muted)' }}>{b.cluster || '—'}</td>
                     <td style={{ color: 'var(--muted)' }}>{b.line || '—'}</td>
-                    <td style={center}>{isOpen ? <span style={{ color: 'var(--red)', fontWeight: 600 }}>● OPEN</span> : <span style={{ color: 'var(--green)', fontWeight: 600 }}>✔ CLOSE</span>}</td>
+                    <td style={center}>{isOpen ? <span style={{ color: 'var(--red)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Circle size={9} fill="var(--red)" stroke="none" />OPEN</span> : <span style={{ color: 'var(--green)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}><CheckCircle2 size={13} />CLOSE</span>}</td>
                     <td style={center}>{b.date} · {b.start || '—'}</td>
                     <td>{b.category || '—'}</td>
                     <td>{b.cause}</td>

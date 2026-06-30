@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 
 const ToastContext = createContext(null);
 
@@ -28,7 +29,10 @@ export function ToastProvider({ children }) {
             style={{ borderLeft: `3px solid ${t.type === 'red' ? 'var(--red)' : 'var(--green)'}` }}
             onClick={() => removeToast(t.id)}
           >
-            {t.msg}
+            {t.type === 'red'
+              ? <XCircle size={16} color="var(--red)" style={{ flexShrink: 0 }} />
+              : <CheckCircle2 size={16} color="var(--green)" style={{ flexShrink: 0 }} />}
+            <span>{t.msg}</span>
           </div>
         ))}
       </div>

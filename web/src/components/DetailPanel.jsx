@@ -1,3 +1,4 @@
+import { X, Pencil, Play, Square, Wrench } from 'lucide-react';
 import { useUI } from '../UIContext.jsx';
 import { useApp } from '../AppContext.jsx';
 import { useToast } from '../ToastContext.jsx';
@@ -37,10 +38,10 @@ export default function DetailPanel() {
           <div style={{ fontFamily: 'var(--display)', fontSize: 17, fontWeight: 700 }}>{m.name}</div>
           <div style={{ fontSize: 11, color: 'var(--muted)' }}>{[m.cluster, m.line].filter(Boolean).join(' · ') || '—'} · {m.plannedHours ?? 16} jam/hari</div>
         </div>
-        <button className="modal-close" onClick={closeDetail}>×</button>
+        <button className="modal-close" onClick={closeDetail}><X size={20} /></button>
       </div>
       <div className="detail-body">
-        <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => openModal('editMachine', m)}>✎ Edit Info Mesin</button>
+        <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => openModal('editMachine', m)}><Pencil size={13} /> Edit Info Mesin</button>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           <div className="detail-stat"><div className="detail-stat-val" style={{ color: col }}>{av.toFixed(1)}%</div><div className="detail-stat-lbl">Availability</div></div>
           <div className="detail-stat"><div className="detail-stat-val">{m.breakdowns}</div><div className="detail-stat-lbl">Breakdowns</div></div>
@@ -72,9 +73,9 @@ export default function DetailPanel() {
           )) : <div style={{ color: 'var(--muted)', fontSize: 12 }}>Tidak Ada Kasus Terbaru</div>}
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button className="btn primary" style={{ flex: 1, padding: 10 }} onClick={() => setStatus('running')}>▶ Running</button>
-          <button className="btn danger" style={{ flex: 1, padding: 10 }} onClick={() => setStatus('down')}>■ Down</button>
-          <button className="btn" style={{ flex: 1, padding: 10 }} onClick={() => setStatus('maintenance')}>🔧 PM</button>
+          <button className="btn primary" style={{ flex: 1, padding: 10 }} onClick={() => setStatus('running')}><Play size={14} /> Running</button>
+          <button className="btn danger" style={{ flex: 1, padding: 10 }} onClick={() => setStatus('down')}><Square size={14} /> Down</button>
+          <button className="btn" style={{ flex: 1, padding: 10 }} onClick={() => setStatus('maintenance')}><Wrench size={14} /> PM</button>
         </div>
       </div>
     </div>

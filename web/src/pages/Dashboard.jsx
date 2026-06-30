@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { RefreshCw, Search } from 'lucide-react';
 import { useApp } from '../AppContext.jsx';
 import { useUI } from '../UIContext.jsx';
 import KpiRow from '../components/KpiRow.jsx';
@@ -47,7 +48,7 @@ export default function Dashboard() {
             <option value="month">Bulanan</option>
           </select>
           <input type="date" className="btn" style={{ padding: '7px 10px' }} min="2026-01-01" value={refDate} onChange={(e) => setRefDate(e.target.value)} title="Pilih tanggal acuan" />
-          <button className="btn-icon" title="Refresh" onClick={() => loadAll()}>↻</button>
+          <button className="btn-icon" title="Refresh" onClick={() => loadAll()}><RefreshCw size={14} /></button>
           <button className="btn primary" onClick={() => openModal('addBreakdown')}>+ RMO</button>
         </div>
       </div>
@@ -58,7 +59,7 @@ export default function Dashboard() {
           {machines.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
         </select>
         <div className="search-wrap" style={{ flex: 1, minWidth: 200 }}>
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"><Search size={14} /></span>
           <input className="search-input" placeholder="Cari mesin, problem, PIC, penyebab…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       </div>

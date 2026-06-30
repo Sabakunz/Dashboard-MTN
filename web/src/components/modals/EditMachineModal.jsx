@@ -42,12 +42,12 @@ export default function EditMachineModal({ payload }) {
         shift: shift.trim(),
         plannedHours: Number(plannedHours) || 16,
       }, logout);
-      showToast(`✅ Mesin ${n} diperbarui`, 'green');
+      showToast(`Mesin ${n} diperbarui`, 'green');
       closeModal();
       loadAll();
       showDetail(n);
     } catch (e) {
-      showToast(`❌ ${e.message}`, 'red');
+      showToast(e.message, 'red');
     }
     setBusy(false);
   }

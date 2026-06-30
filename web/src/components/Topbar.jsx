@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Menu, Sun, Moon, ClipboardList, Bell, LogOut } from 'lucide-react';
 import { useUI } from '../UIContext.jsx';
 import { useApp } from '../AppContext.jsx';
 import { useAuth } from '../AuthContext.jsx';
@@ -46,7 +47,7 @@ export default function Topbar() {
 
   return (
     <header className="topbar">
-      <button className="hamburger" onClick={toggleDrawer} aria-label="Menu">☰</button>
+      <button className="hamburger" onClick={toggleDrawer} aria-label="Menu"><Menu size={20} /></button>
       <div className="brand-nav">
         <div className="logo" onClick={() => navigate('dashboard')}>Maintenance<span> Dashboard</span></div>
         <nav className="nav-links">
@@ -59,14 +60,14 @@ export default function Topbar() {
         <span><span className={'conn-dot' + (connected ? '' : ' off')}></span><span className="conn-label">{connected ? 'Live' : 'Offline'}</span></span>
         <span className="date-label">{clock}</span>
         <button className="btn-icon" onClick={toggleTheme} title={theme === 'dark' ? 'Mode terang' : 'Mode gelap'}>
-          {theme === 'dark' ? '☀️' : '🌙'}
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         <div className="notif-btn todo-btn" onClick={toggleTodo} title="To-Do · Work Order">
-          📋
+          <ClipboardList size={18} />
           {openWorkOrders > 0 && <span className="notif-badge">{openWorkOrders}</span>}
         </div>
         <div className="notif-btn" onClick={toggleNotif}>
-          🔔
+          <Bell size={18} />
           {unread > 0 && <span className="notif-badge">{unread}</span>}
         </div>
         <div className="avatar-wrap" ref={avatarRef}>
@@ -74,7 +75,7 @@ export default function Topbar() {
             {(username || 'OP').slice(0, 2).toUpperCase()}
           </div>
           <div className={'avatar-menu' + (avatarOpen ? ' show' : '')}>
-            <div className="avatar-menu-item" onClick={logout}>🚪 Log Out</div>
+            <div className="avatar-menu-item" onClick={logout}><LogOut size={14} /> Log Out</div>
           </div>
         </div>
       </div>

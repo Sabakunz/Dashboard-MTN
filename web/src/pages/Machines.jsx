@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { FolderUp, Factory, Search } from 'lucide-react';
 import { useApp } from '../AppContext.jsx';
 import { useUI } from '../UIContext.jsx';
 
@@ -28,15 +29,15 @@ export default function Machines() {
       <div className="page-header">
         <div><div className="page-title">Semua Mesin</div><div className="page-sub">Tekan baris untuk melihat detail</div></div>
         <div className="header-actions">
-          <button className="btn" onClick={() => openModal('import')}>📥 Import CSV</button>
-          <button className="btn" onClick={() => openModal('addMachine')}>🏭 Tambah Mesin</button>
+          <button className="btn" onClick={() => openModal('import')}><FolderUp size={14} /> Import CSV</button>
+          <button className="btn" onClick={() => openModal('addMachine')}><Factory size={14} /> Tambah Mesin</button>
           <button className="btn primary" onClick={() => openModal('addBreakdown')}>+ RMO</button>
         </div>
       </div>
       <div className="card">
         <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
           <div className="search-wrap" style={{ flex: 1, minWidth: 140 }}>
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"><Search size={14} /></span>
             <input className="search-input" placeholder="Cari Mesin…" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <div className="filter-row">

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Search } from 'lucide-react';
 import { useUI } from '../UIContext.jsx';
 
 export default function MachineTable({ machines, limit, search: controlledSearch, onSearchChange }) {
@@ -35,7 +36,7 @@ export default function MachineTable({ machines, limit, search: controlledSearch
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {!controlled && (
             <div className="search-wrap" style={{ minWidth: 130 }}>
-              <span className="search-icon">🔍</span>
+              <span className="search-icon"><Search size={14} /></span>
               <input className="search-input" placeholder="Cari Mesin…" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
           )}

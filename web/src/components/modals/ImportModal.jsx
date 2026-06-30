@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { FolderOpen, CheckCircle2 } from 'lucide-react';
 import Modal from '../Modal.jsx';
 import { useUI } from '../../UIContext.jsx';
 import { useApp } from '../../AppContext.jsx';
@@ -43,12 +44,12 @@ export default function ImportModal() {
     formData.append('file', file);
     try {
       const result = await apiSendForm(MODES[mode].endpoint, formData, logout);
-      showToast(`✅ Imported ${result.imported}/${result.total} rows`, 'green');
-      addNotif('📥 CSV data imported', 'green');
+      showToast(`Imported ${result.imported}/${result.total} rows`, 'green');
+      addNotif('CSV data imported', 'green');
       closeModal();
       loadAll();
     } catch {
-      showToast('⚠ Import failed — check backend connection', 'red');
+      showToast('Import failed — check backend connection', 'red');
     }
     setBusy(false);
   }
@@ -67,8 +68,10 @@ export default function ImportModal() {
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => { e.preventDefault(); setDragOver(false); pickFile(e.dataTransfer.files[0]); }}
       >
-        <div style={{ fontSize: 28 }}>📂</div>
-        <p>{file ? `✅ ${file.name}` : 'Tap to select file'}</p>
+        <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--muted)' }}><FolderOpen size={28} /></div>
+        <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          {file ? <><CheckCircle2 size={14} color="var(--green)" />{file.name}</> : 'Tap to select file'}
+        </p>
         <p style={{ fontSize: 11, marginTop: 4 }}>.csv</p>
         <input type="file" ref={fileInputRef} accept=".csv" style={{ display: 'none' }} onChange={(e) => pickFile(e.target.files[0])} />
       </div>

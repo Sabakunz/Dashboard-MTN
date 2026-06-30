@@ -1,3 +1,5 @@
+import { X } from 'lucide-react';
+
 export default function Modal({ title, onClose, children, fullscreen }) {
   if (fullscreen) {
     return (
@@ -5,7 +7,7 @@ export default function Modal({ title, onClose, children, fullscreen }) {
         <div className="modal fullscreen">
           <div className="modal-header fullscreen-header">
             <div className="modal-title">{title}</div>
-            <button className="modal-close" onClick={onClose}>×</button>
+            <button className="modal-close" onClick={onClose}><X size={24} /></button>
           </div>
           <div className="fullscreen-body">{children}</div>
         </div>
@@ -19,7 +21,7 @@ export default function Modal({ title, onClose, children, fullscreen }) {
         <div className="modal-drag" onClick={onClose}></div>
         <div className="modal-header">
           <div className="modal-title">{title}</div>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className="modal-close" onClick={onClose}><X size={20} /></button>
         </div>
         {children}
       </div>

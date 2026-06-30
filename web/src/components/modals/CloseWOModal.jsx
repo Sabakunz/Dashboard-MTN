@@ -30,11 +30,11 @@ export default function CloseWOModal({ payload }) {
       await apiSend('/breakdown-close', 'POST', {
         id: payload.id, end_date: endDate, end_time: endTime, resolution, action, pic_mtn: picMtn,
       }, logout);
-      showToast('✅ Work order ditutup', 'green');
+      showToast('Work order ditutup', 'green');
       closeModal();
       loadAll();
     } catch (e) {
-      showToast(`❌ ${e.message}`, 'red');
+      showToast(e.message, 'red');
     }
     setBusy(false);
   }
