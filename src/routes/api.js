@@ -81,6 +81,7 @@ router.get('/machines', async (req, res, next) => {
         assetNumber: m.assetNumber,
         type: m.type,
         brand: m.brand,
+        yearMachine: m.yearMachine,
         power: m.power,
         cluster: m.cluster,
         line: m.line,
@@ -562,7 +563,7 @@ router.post('/breakdown-close', async (req, res, next) => {
 // Register a new machine so it can receive work orders.
 router.post('/machines', async (req, res, next) => {
   try {
-    const { name, assetNumber, type, brand, power, cluster, line, shift, plannedHours } = req.body;
+    const { name, assetNumber, type, brand, yearMachine, power, cluster, line, shift, plannedHours } = req.body;
     if (!name) {
       return res.status(400).json({ error: 'name is required' });
     }
@@ -576,6 +577,7 @@ router.post('/machines', async (req, res, next) => {
         assetNumber: assetNumber || '',
         type: type || '',
         brand: brand || '',
+        yearMachine: yearMachine || null,
         power: power || '',
         cluster: cluster || '',
         line: line || '',
@@ -617,7 +619,7 @@ router.post('/machines-status', async (req, res, next) => {
 // `machine`, distinct from `name` which may be a rename.)
 router.post('/machines-edit', async (req, res, next) => {
   try {
-    const { machine: machineName, name, assetNumber, type, brand, power, cluster, line, shift, plannedHours } = req.body;
+    const { machine: machineName, name, assetNumber, type, brand, yearMachine, power, cluster, line, shift, plannedHours } = req.body;
     const existing = await prisma.machine.findUnique({ where: { name: machineName } });
     if (!existing) return res.status(404).json({ error: `Machine "${machineName}" not found` });
 
@@ -633,6 +635,7 @@ router.post('/machines-edit', async (req, res, next) => {
         assetNumber: assetNumber ?? existing.assetNumber,
         type: type ?? existing.type,
         brand: brand ?? existing.brand,
+        yearMachine: yearMachine !== undefined ? (yearMachine || null) : existing.yearMachine,
         power: power ?? existing.power,
         cluster: cluster ?? existing.cluster,
         line: line ?? existing.line,
@@ -696,7 +699,7 @@ router.get('/export-machines', async (req, res, next) => {
     });
 
     const headers = [
-      'Nama Mesin', 'Nomor Asset', 'Type', 'Merk Tahun', 'Daya', 'Cluster', 'Line', 'Shift',
+      'Nama Mesin', 'Nomor Asset', 'Type', 'Merk', 'Tahun Mesin', 'Daya', 'Cluster', 'Line', 'Shift',
       'Jam Kerja Harian', 'Status Saat Ini',
       'Tanggal', 'Waktu Mulai', 'Jenis Problem', 'Problem Identifikasi', 'PIC GH',
       'Tanggal Selesai', 'Waktu Selesai', 'Penyelesaian', 'Action', 'PIC MTN', 'Durasi (jam)',
@@ -704,9 +707,9 @@ router.get('/export-machines', async (req, res, next) => {
 
     const rows = [];
     for (const m of machines) {
-      const base = [m.name, m.assetNumber, m.type, m.brand, m.power, m.cluster, m.line, m.shift, m.plannedHours, m.status];
+      const base = [m.name, m.assetNumber, m.type, m.brand, m.yearMachine ?? '', m.power, m.cluster, m.line, m.shift, m.plannedHours, m.status];
       if (!m.breakdowns.length) {
-        rows.push([...base, '', '', '', '', '', '', '', '', '', '']);
+        rows.push([...base, '', '', '', '', '', '', '', '', '', '', '']);
         continue;
       }
       for (const b of m.breakdowns) {
@@ -787,7 +790,7 @@ router.post('/import', upload.single('file'), async (req, res, next) => {
 
 // ── POST /api/import-machines ──────────────────────────
 // Accepts .csv with machine master-data columns:
-// NO, Nomor Asset, Nama Mesin, Type, Merk tahun, Daya, Cluster, Line, Shift, Jam Waktu Kerja
+// NO, Nomor Asset, Nama Mesin, Type, Merk, Tahun Mesin, Daya, Cluster, Line, Shift, Jam Waktu Kerja
 router.post('/import-machines', upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
@@ -813,11 +816,13 @@ router.post('/import-machines', upload.single('file'), async (req, res, next) =>
       const plannedHoursRaw = field('Jam Waktu Kerja', 'plannedHours');
       const plannedHours = plannedHoursRaw !== '' && !isNaN(Number(plannedHoursRaw)) ? Number(plannedHoursRaw) : null;
 
+      const yearRaw = field('Tahun Mesin', 'year_machine', 'Tahun');
       const data = {
-        assetNumber: field('Nomor Asset'),
-        type: field('Type'),
-        brand: field('Merk tahun', 'Merk Tahun'),
-        power: field('Daya'),
+        assetNumber: field('Nomor Asset', 'id_asset_machine'),
+        type: field('Type', 'type_machine'),
+        brand: field('Merk', 'Merk tahun', 'Merk Tahun', 'brand_machine'),
+        yearMachine: yearRaw || null,
+        power: field('Daya', 'power_machine'),
         cluster: field('Cluster'),
         line: field('Line'),
         shift: field('Shift'),

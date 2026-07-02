@@ -16,6 +16,7 @@ export default function EditMachineModal({ payload }) {
   const [assetNumber, setAssetNumber] = useState(payload.assetNumber || '');
   const [type, setType] = useState(payload.type || '');
   const [brand, setBrand] = useState(payload.brand || '');
+  const [yearMachine, setYearMachine] = useState(payload.yearMachine || '');
   const [power, setPower] = useState(payload.power || '');
   const [cluster, setCluster] = useState(payload.cluster || '');
   const [line, setLine] = useState(payload.line || '');
@@ -36,6 +37,7 @@ export default function EditMachineModal({ payload }) {
         assetNumber: assetNumber.trim(),
         type: type.trim(),
         brand: brand.trim(),
+        yearMachine: yearMachine.trim() || null,
         power: power.trim(),
         cluster: cluster.trim(),
         line: line.trim(),
@@ -69,8 +71,12 @@ export default function EditMachineModal({ payload }) {
           <input type="text" className="form-input" value={type} onChange={(e) => setType(e.target.value)} />
         </div>
         <div className="form-group">
-          <label className="form-label">Merk Tahun</label>
+          <label className="form-label">Merk</label>
           <input type="text" className="form-input" value={brand} onChange={(e) => setBrand(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Tahun Mesin</label>
+          <input type="text" className="form-input" placeholder="contoh. 2020" value={yearMachine} onChange={(e) => setYearMachine(e.target.value)} />
         </div>
         <div className="form-group">
           <label className="form-label">Daya</label>

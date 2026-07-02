@@ -53,7 +53,8 @@ export default function DetailPanel() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px', fontSize: 12 }}>
             <div><span style={{ color: 'var(--muted)' }}>Nomor Asset: </span>{m.assetNumber || '—'}</div>
             <div><span style={{ color: 'var(--muted)' }}>Type: </span>{m.type || '—'}</div>
-            <div><span style={{ color: 'var(--muted)' }}>Merk Tahun: </span>{m.brand || '—'}</div>
+            <div><span style={{ color: 'var(--muted)' }}>Merk: </span>{m.brand || '—'}</div>
+            <div><span style={{ color: 'var(--muted)' }}>Tahun: </span>{m.yearMachine || '—'}</div>
             <div><span style={{ color: 'var(--muted)' }}>Daya: </span>{m.power || '—'}</div>
             <div><span style={{ color: 'var(--muted)' }}>Shift: </span>{m.shift || '—'}</div>
           </div>

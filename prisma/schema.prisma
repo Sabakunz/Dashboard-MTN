@@ -18,20 +18,23 @@ model Admin {
 
 model Machine {
   id             Int         @id @default(autoincrement())
-  name           String      @unique // Nama Mesin
-  assetNumber    String      @default("") // Nomor Asset
-  type           String      @default("") // Type mesin (Robot, CNC, Conveyor, dst)
-  brand          String      @default("") // Merk Tahun
-  power          String      @default("") // Daya
+  name           String      @unique @map("machine")           // Nama Mesin
+  assetNumber    String      @default("") @map("id_asset_machine") // Nomor Asset
+  type           String      @default("") @map("type_machine")  // Type mesin (Robot, CNC, Conveyor, dst)
+  brand          String      @default("") @map("brand_machine") // Merk / Merek
+  yearMachine    String?     @map("year_machine")               // Tahun mesin (diisi manual, format bebas misal "2020")
+  power          String      @default("") @map("power_machine") // Daya
   cluster        String      @default("")
   line           String      @default("")
-  shift          String      @default("") // Shift kerja
-  status         String      @default("idle") // running | down | idle | maintenance
+  shift          String      @default("")                        // Shift kerja
+  status         String      @default("idle")                   // running | down | idle | maintenance
   performancePct Float       @default(95)
   qualityPct     Float       @default(98)
-  plannedHours   Float       @default(16) // Jam Waktu Kerja (jam kerja harian)
+  plannedHours   Float       @default(16) @map("worktime_machine") // Jam Waktu Kerja (jam kerja harian)
   createdAt      DateTime    @default(now())
   breakdowns     Breakdown[]
+
+  @@map("Machine")
 }
 
 model Breakdown {

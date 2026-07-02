@@ -16,7 +16,7 @@ const MODES = {
   machines: {
     label: 'Master Data Mesin',
     endpoint: '/import-machines',
-    columns: 'NO · Nomor Asset · Nama Mesin · Type · Merk tahun · Daya · Cluster · Line · Shift · Jam Waktu Kerja',
+    columns: 'NO · Nomor Asset · Nama Mesin · Type · Merk · Tahun Mesin · Daya · Cluster · Line · Shift · Jam Waktu Kerja',
   },
 };
 

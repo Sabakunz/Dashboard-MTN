@@ -16,6 +16,7 @@ export default function AddMachineModal() {
   const [assetNumber, setAssetNumber] = useState('');
   const [type, setType] = useState('');
   const [brand, setBrand] = useState('');
+  const [yearMachine, setYearMachine] = useState('');
   const [power, setPower] = useState('');
   const [cluster, setCluster] = useState('');
   const [line, setLine] = useState('');
@@ -35,6 +36,7 @@ export default function AddMachineModal() {
         assetNumber: assetNumber.trim(),
         type: type.trim(),
         brand: brand.trim(),
+        yearMachine: yearMachine.trim() || null,
         power: power.trim(),
         cluster: cluster.trim(),
         line: line.trim(),
@@ -67,8 +69,12 @@ export default function AddMachineModal() {
           <input type="text" className="form-input" placeholder="contoh. Robot" value={type} onChange={(e) => setType(e.target.value)} />
         </div>
         <div className="form-group">
-          <label className="form-label">Merk Tahun</label>
-          <input type="text" className="form-input" placeholder="contoh. Fanuc 2020" value={brand} onChange={(e) => setBrand(e.target.value)} />
+          <label className="form-label">Merk</label>
+          <input type="text" className="form-input" placeholder="contoh. Fanuc" value={brand} onChange={(e) => setBrand(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Tahun Mesin</label>
+          <input type="text" className="form-input" placeholder="contoh. 2020" value={yearMachine} onChange={(e) => setYearMachine(e.target.value)} />
         </div>
         <div className="form-group">
           <label className="form-label">Daya</label>
